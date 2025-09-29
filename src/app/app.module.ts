@@ -2,19 +2,18 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfig } from 'src/config/typeorm.config';
+import { AuthModule } from 'src/module/auth/auth.module';
 import { DataSource } from 'typeorm';
 
 @Module({
   imports: [
-        ConfigModule.forRoot({
-      isGlobal: true,       
-      envFilePath: '.env',  
-    }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env', }),
     TypeOrmModule.forRoot(TypeOrmConfig()),
+    AuthModule,
   ],
 })
 export class AppModule implements OnModuleInit {
-  constructor(private dataSource: DataSource) {}
+  constructor(private dataSource: DataSource) { }
 
   async onModuleInit() {
     if (this.dataSource.isInitialized) {

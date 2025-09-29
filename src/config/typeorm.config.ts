@@ -12,9 +12,9 @@ export function TypeOrmConfig(): TypeOrmModuleOptions {
         database: DB_NAME,
         username: DB_USERNAME,
         password: DB_PASSWORD,
-        autoLoadEntities: false,
-        entities: [join(__dirname, "../modules/**/entities/*.entity{.ts,.js}")],
-        synchronize: false,
+        autoLoadEntities: true,
+        entities: [join(__dirname, "../module/**/entities/*.entity{.ts,.js}")],
+        synchronize: true,
         type: 'postgres',
     }
 }
