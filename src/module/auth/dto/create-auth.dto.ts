@@ -8,13 +8,8 @@ export class SignUpDto {
         lastName:string
     
         @ApiProperty()
-        username:string
-    
-        @ApiProperty()
-        email:string
-    
-        @ApiProperty()
-        password:string
+        mobile:string
+
 }
 
 
@@ -22,9 +17,27 @@ export class SignUpDto {
 
 export class SignInDto {
         @ApiProperty()
-        username:string
+        mobile:string
     
         @ApiProperty()
-        password:string
+        code:string
+        
+}
+export class VerifyOtpCodeDto {
+        @ApiProperty()
+        mobile:string
+    
+        @ApiProperty()
+        code:string
+        
+}
+
+
+
+export class OtpCodeDto {
+        @ApiProperty()
+        mobile:string
+    
+
         
 }
