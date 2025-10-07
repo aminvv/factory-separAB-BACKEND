@@ -8,10 +8,10 @@ import { OtpEntity } from "./otp.entity"
 @Entity(EntityName.User)
 export class UserEntity extends BaseEntityCustom {
 
-    @Column()
+    @Column({nullable: true,})
     firstName: string
 
-    @Column()
+    @Column({nullable: true,})
     lastName: string
 
     @Column({ nullable: true, unique: true })

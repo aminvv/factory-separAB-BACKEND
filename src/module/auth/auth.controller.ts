@@ -1,18 +1,36 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { OtpCodeDto, SignUpDto, VerifyOtpCodeDto } from './dto/create-auth.dto';
+import { AuthDto, OtpCodeDto, VerifyOtpCodeDto } from './dto/create-auth.dto';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { swaggerConsumes } from 'src/common/enums/swagger-consumes.enum';
+import { TokenUtils } from './utils/token.utils';
+import { Request, Response } from 'express';
+import { TokenService } from './token.service';
 
 @ApiTags("Auth")
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly tokenService: TokenService,
+    private readonly tokenUtils: TokenUtils
+
+  ) { }
 
   @Post("/signup")
   @ApiConsumes(swaggerConsumes.UrlEncoded)
-  signUp(@Body() signUpDto: SignUpDto) {
-    return this.authService.signup(signUpDto)
+  async signUp(@Body() signUpDto: AuthDto, @Res({ passthrough: true }) res: Response) {
+    const { accessToken, refreshToken, message } = await this.authService.signup(signUpDto)
+    this.tokenUtils.setRefreshTokenCookie(res, refreshToken)
+    return { message, accessToken }
+
+  }
+  @Post("/signin")
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
+  async signIn(@Body() signUpDto: AuthDto, @Res({ passthrough: true }) res: Response) {
+    const { accessToken, refreshToken, message } = await this.authService.signIn(signUpDto)
+    this.tokenUtils.setRefreshTokenCookie(res, refreshToken)
+    return { message, accessToken }
   }
 
 
@@ -29,8 +47,17 @@ export class AuthController {
   }
 
   @Get('check-mobile/:mobile')
-async checkMobile(@Param('mobile') mobile: string) {
-  return this.authService.checkMobileExists(mobile);
-}
+  async checkMobile(@Param('mobile') mobile: string) {
+    return this.authService.checkMobileExists(mobile);
+  }
+
+
+  @Post('/refresh')
+  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const refreshToken = this.tokenUtils.getRefreshTokenFromCookie(req)
+    const { newRefreshToken, accessToken } = this.tokenUtils.refreshToken(refreshToken)
+    this.tokenUtils.setRefreshTokenCookie(res, newRefreshToken)
+    return accessToken
+  }
 
 }
