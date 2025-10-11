@@ -16,6 +16,9 @@ export class VerifyOtpCodeDto {
         @ApiProperty()
         code:string
         
+        @ApiProperty()
+        otpToken:string
+        
 }
 
 

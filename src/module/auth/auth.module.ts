@@ -6,6 +6,7 @@ import { UserEntity } from '../user/entities/user.entity';
 import { OtpEntity } from '../user/entities/otp.entity';
 import { TokenService } from './token.service';
 import { JwtModule } from '@nestjs/jwt';
+import { TokenUtils } from './utils/token.utils';
 
 @Module({
   imports:[ TypeOrmModule.forFeature([UserEntity,OtpEntity]),
@@ -13,9 +14,10 @@ import { JwtModule } from '@nestjs/jwt';
       secret: process.env.JWT_SECRET || 'secretKey',
       signOptions: { expiresIn: '1h' },
     }),
+    TokenUtils
 ],
   controllers: [AuthController],
-  providers: [AuthService ,TokenService],
+  providers: [AuthService ,TokenService,TokenUtils],
     exports: [AuthService],
 })
 export class AuthModule {}

@@ -1,13 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto, OtpCodeDto, VerifyOtpCodeDto } from './dto/create-auth.dto';
-import { ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { swaggerConsumes } from 'src/common/enums/swagger-consumes.enum';
 import { TokenUtils } from './utils/token.utils';
 import { Request, Response } from 'express';
 import { TokenService } from './token.service';
+import { AuthGuard } from './guards/auth.guard';
 
 @ApiTags("Auth")
+@ApiBearerAuth("Authorization")
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -16,7 +18,7 @@ export class AuthController {
     private readonly tokenUtils: TokenUtils
 
   ) { }
-
+  @UseGuards(AuthGuard)
   @Post("/signup")
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   async signUp(@Body() signUpDto: AuthDto, @Res({ passthrough: true }) res: Response) {
@@ -32,7 +34,6 @@ export class AuthController {
     this.tokenUtils.setRefreshTokenCookie(res, refreshToken)
     return { message, accessToken }
   }
-
 
   @Post("/createOtp")
   @ApiConsumes(swaggerConsumes.UrlEncoded)

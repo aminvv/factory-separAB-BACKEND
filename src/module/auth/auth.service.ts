@@ -7,6 +7,7 @@ import { UserEntity } from '../user/entities/user.entity';
 import { OtpEntity } from '../user/entities/otp.entity';
 import { TokenService } from './token.service';
 import { JwtTokenPayload, PhoneTokenPayload } from './enums/payload';
+import { AuthMessage } from 'src/common/enums/message.enum';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +15,7 @@ export class AuthService {
     @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
     @InjectRepository(OtpEntity) private otpRepository: Repository<OtpEntity>,
     private tokenService: TokenService
-  ) {}
+  ) { }
 
 
   async signup(signupDto: AuthDto) {
@@ -58,7 +59,7 @@ export class AuthService {
 
     otp = await this.otpRepository.save(otp)
 
-  
+
     const otpToken = this.tokenService.generateOtpToken({ mobile })
     return { otp, otpToken };
   }
@@ -67,41 +68,57 @@ export class AuthService {
 
 
 
-  
-async verifyOtpCode(verifyOtpCodeDto: VerifyOtpCodeDto) {
-  const { mobile, code } = verifyOtpCodeDto;
 
+  async verifyOtpCode(verifyOtpCodeDto: VerifyOtpCodeDto) {
+    const { mobile, code, otpToken } = verifyOtpCodeDto;
 
-  const otp = await this.otpRepository.findOne({ where: { mobile } })
-  if (!otp) {
-    throw new UnauthorizedException('کدی برای این شماره ارسال نشده است.')
-  }
+    if (!otpToken) {
+      throw new UnauthorizedException('توکن OTP موجود نیست یا منقضی شده است.');
+    }
+    const payload = this.tokenService.verifyToken<{ mobile: string }>(otpToken, 'otp');
+    if (!payload || payload.mobile !== mobile) {
+      throw new UnauthorizedException('توکن معتبر نیست یا منقضی شده');
+    }
 
-  if (otp.code !== code) {
-    throw new UnauthorizedException('کد واردشده نادرست است.')
-  }
+    const otp = await this.otpRepository.findOne({ where: { mobile } })
+    if (!otp) {
+      throw new UnauthorizedException('کدی برای این شماره ارسال نشده است.')
+    }
 
-  const now = new Date();
-  const expiresIn = new Date(otp.expiresIn)
-  if (expiresIn.getTime() < now.getTime()) {
+    if (otp.code !== code) {
+      throw new UnauthorizedException('کد واردشده نادرست است.')
+    }
+
+    const now = new Date();
+    const expiresIn = new Date(otp.expiresIn)
+    if (expiresIn.getTime() < now.getTime()) {
+      await this.otpRepository.delete({ mobile })
+      throw new UnauthorizedException('کد منقضی شده است.')
+    }
+
     await this.otpRepository.delete({ mobile })
-    throw new UnauthorizedException('کد منقضی شده است.')
+
+    const otpPayload: PhoneTokenPayload = { mobile }
+
+    return {
+      message: 'کد OTP تایید شد.',
+    };
   }
-
-  await this.otpRepository.delete({ mobile })
-
-  const otpPayload: PhoneTokenPayload = { mobile }
-  const otpToken = this.tokenService.generateOtpToken(otpPayload, '2m')
-
-  return {
-    message: 'کد OTP تایید شد.',
-    otpToken, 
-  };
-}
 
 
   async checkMobileExists(mobile: string) {
     const user = await this.userRepository.findOne({ where: { mobile } })
     return { exists: !!user }
+  }
+
+
+
+  async validationAccessToken(accessToken:string) {
+    const payload =this.tokenService.verifyToken<{userId:number}>(accessToken,'access')
+    const user=await this.userRepository.findOneBy({id:payload?.userId})
+    if(!user ){
+      throw new UnauthorizedException(AuthMessage.loginAgain)
+    }
+    return user
   }
 }
