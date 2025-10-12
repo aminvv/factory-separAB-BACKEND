@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfig } from 'src/config/typeorm.config';
 import { AuthModule } from 'src/module/auth/auth.module';
 import { TokenUtils } from 'src/module/auth/utils/token.utils';
+import { ProductModule } from 'src/module/product/product.module';
 import { DataSource } from 'typeorm';
 
 @Module({
@@ -11,7 +12,7 @@ import { DataSource } from 'typeorm';
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env', }),
     TypeOrmModule.forRoot(TypeOrmConfig()),
     AuthModule,
-    TokenUtils
+    ProductModule,
   ],
 })
 export class AppModule implements OnModuleInit {

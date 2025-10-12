@@ -14,10 +14,9 @@ import { TokenUtils } from './utils/token.utils';
       secret: process.env.JWT_SECRET || 'secretKey',
       signOptions: { expiresIn: '1h' },
     }),
-    TokenUtils
 ],
   controllers: [AuthController],
   providers: [AuthService ,TokenService,TokenUtils],
-    exports: [AuthService],
+    exports: [AuthService, TokenService, TokenUtils]
 })
 export class AuthModule {}

@@ -1,7 +1,7 @@
-import { UnauthorizedException } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { Request, Response } from "express";
 import { TokenService } from "../token.service";
-
+@Injectable()
 export class TokenUtils {
 
 

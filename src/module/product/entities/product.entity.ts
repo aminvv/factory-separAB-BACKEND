@@ -28,8 +28,8 @@ export class ProductEntity extends BaseEntityCustom {
     @Column({ nullable: true })
     warranty: string
 
-    @Column({ nullable: true })
-    image: string
+    @Column("text", { array: true, nullable: true })
+    image: string[]
 
     @Column('decimal', { precision: 12, scale: 2 })
     price: number

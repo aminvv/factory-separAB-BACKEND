@@ -26,5 +26,5 @@
       "express"
     ]
   },
-   "include": ["src/**/*"]
+   "include": ["src/**/*", "src/common/decorators/.decorator.ts"]
 }

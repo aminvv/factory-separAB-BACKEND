@@ -18,7 +18,7 @@ export class AuthController {
     private readonly tokenUtils: TokenUtils
 
   ) { }
-  @UseGuards(AuthGuard)
+
   @Post("/signup")
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   async signUp(@Body() signUpDto: AuthDto, @Res({ passthrough: true }) res: Response) {

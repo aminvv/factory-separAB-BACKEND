@@ -1,32 +1,33 @@
 import { ApiProperty } from "@nestjs/swagger"
+import { IsMobilePhone, IsNotEmpty, IsString } from "class-validator"
 
 export class AuthDto {
-        @ApiProperty()
-        mobile:string
-
+    @ApiProperty()
+    @IsMobilePhone('fa-IR') 
+    @IsNotEmpty()
+    mobile: string
 }
-
-
-
 
 export class VerifyOtpCodeDto {
-        @ApiProperty()
-        mobile:string
+    @ApiProperty()
+    @IsMobilePhone('fa-IR')
+    @IsNotEmpty()
+    mobile: string
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    code: string
     
-        @ApiProperty()
-        code:string
-        
-        @ApiProperty()
-        otpToken:string
-        
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    otpToken: string
 }
 
-
-
 export class OtpCodeDto {
-        @ApiProperty()
-        mobile:string
-    
-
-        
+    @ApiProperty()
+    @IsMobilePhone('fa-IR')
+    @IsNotEmpty()
+    mobile: string
 }
