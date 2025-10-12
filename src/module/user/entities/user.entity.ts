@@ -3,6 +3,7 @@ import { EntityName } from "src/common/enums/entity.enum"
 import { Column, CreateDateColumn, Entity,  OneToMany,  } from "typeorm"
 import { OtpEntity } from "./otp.entity"
 import { ProductEntity } from "src/module/product/entities/product.entity"
+import { Roles } from "src/common/enums/roles.enum"
 
 
 
@@ -17,6 +18,9 @@ export class UserEntity extends BaseEntityCustom {
 
     @Column({ nullable: true, unique: true })
     mobile: string
+
+    @Column({  enum:Roles,default:Roles.User })
+    role: Roles
 
     @CreateDateColumn()
     create_at: Date
