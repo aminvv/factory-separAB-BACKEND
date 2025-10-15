@@ -25,7 +25,7 @@ export class ProductService {
 
 
   // ================= CREATE =================
-  async createProduct(productDto: ProductDto) {
+  async createProduct(productDto: ProductDto ,imageUrl:string) {
     const user = this.request.user;
     if (!user) {
       throw new NotFoundException(NotFoundMessage.NotFoundUser)
@@ -33,6 +33,7 @@ export class ProductService {
 
     const product = this.productRepository.create({
       ...productDto,
+      image: imageUrl ? [imageUrl] : productDto.image,
       createdBy: user,
     });
 
@@ -44,7 +45,7 @@ export class ProductService {
     return {
       message: 'Product created successfully',
       product: saved,
-    };
+    }; 
   }
 
 

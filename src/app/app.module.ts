@@ -24,5 +24,8 @@ export class AppModule implements OnModuleInit {
     } else {
       console.log('❌ Database not connected');
     }
+
+
+
   }
 }

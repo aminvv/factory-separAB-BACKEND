@@ -23,7 +23,8 @@
     ],
     "types": [
       "node",
-      "express"
+      "express",
+      "Multer"
     ]
   },
    "include": ["src/**/*", "src/common/decorators/.decorator.ts"]

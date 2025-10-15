@@ -6,10 +6,11 @@ import { ProductEntity } from './entities/product.entity';
 import { UserEntity } from '../user/entities/user.entity';
 import { AuthModule } from '../auth/auth.module';
 import { ProductAuditEntity } from './entities/product-audit.entity';
+import { ProductAuditService } from './product-audit.service';
 
 @Module({
   imports:[TypeOrmModule.forFeature([ProductEntity,UserEntity,ProductAuditEntity]),AuthModule],
   controllers: [ProductController],
-  providers: [ProductService,ProductAuditEntity],
+  providers: [ProductService,ProductAuditService],
 })
 export class ProductModule {}

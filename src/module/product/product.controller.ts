@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { ProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -9,7 +9,11 @@ import { pagination } from 'src/common/decorators/pagination.decorator';
 import { PaginationDto } from 'src/common/dtos/paginationDto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { swaggerConsumes } from 'src/common/enums/swagger-consumes.enum';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UploadedImageParam } from 'src/common/decorators/upload-image-.decorator';
+
+
 
 
 
@@ -17,38 +21,72 @@ import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 @ApiBearerAuth("Authorization")
 @Controller('product')
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+  ) { }
 
   @Post()
-  @UseGuards(AuthGuard,RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard)
   // @CanAccess(Roles.Admin)
-  @ApiConsumes(swaggerConsumes.Json)
-  create(@Body() ProductDto: ProductDto) {
-    return this.productService.createProduct(ProductDto);
+  @ApiConsumes(swaggerConsumes.MultiPartData,swaggerConsumes.Json)
+  @UseInterceptors(FileInterceptor('image'))
+  async create(@Body() productDto: ProductDto, @UploadedImageParam('product') imageUrl: string) {
+    await this.productService.createProduct(productDto,imageUrl);
+    return {
+   message :" Product created successfully"
+    }
   }
 
   @Get()
   @pagination()
-    @ApiConsumes(swaggerConsumes.UrlEncoded)
-  findAll(@Query()paginationDto:PaginationDto) {
+    @UseGuards(AuthGuard, RolesGuard)
+
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
+  findAll(@Query() paginationDto: PaginationDto) {
     return this.productService.findAll(paginationDto);
   }
 
   @Get(':id')
-    @ApiConsumes(swaggerConsumes.UrlEncoded)
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
   findOne(@Param('id') id: string) {
     return this.productService.findOne(+id);
   }
 
   @Patch(':id')
-    @ApiConsumes(swaggerConsumes.UrlEncoded)
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.update(+id, updateProductDto);
   }
 
   @Delete(':id')
-    @ApiConsumes(swaggerConsumes.UrlEncoded)
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
   remove(@Param('id') id: string) {
     return this.productService.remove(+id);
   }
+
+ 
+
+
+  @Post('upload-image')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        image: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('image'))
+  async uploadImage(@UploadedImageParam('product') imageUrl: string) {
+    return { url: imageUrl }
+  }
 }
+
+
+
+
+
+
+
+
