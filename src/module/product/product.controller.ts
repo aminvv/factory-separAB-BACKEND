@@ -82,11 +82,3 @@ export class ProductController {
     return { url: imageUrl }
   }
 }
-
-
-
-
-
-
-
-

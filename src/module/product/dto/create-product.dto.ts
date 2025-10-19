@@ -1,51 +1,24 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { 
-  IsString, 
-  IsNumber, 
-  IsOptional, 
-  IsNotEmpty, 
-  IsPositive, 
-  IsArray 
-} from 'class-validator';
-import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsOptional, IsArray } from 'class-validator';
 
 export class ProductDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
+  @ApiProperty({ description: 'کد محصول', example: 'PRD001' })
   productCode: string;
 
-  @ApiProperty()
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  rollWeight?: number;
+  @ApiProperty({ description: 'نام محصول', example: 'ایزوگام پشم شیشه' })
+  productName: string;
 
-  @ApiProperty()
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  thickness?: number;
+  @ApiProperty({ description: 'قیمت محصول', example: 120000 })
+  price: number;
 
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  dimensions?: string;
+  @ApiProperty({ description: 'تعداد محصول در انبار', example: 50 })
+  quantity: number;
 
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  lifespan?: string;
+  @ApiPropertyOptional({ description: 'درصد تخفیف', example: 10 })
+  discountPercent?: number;
 
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  bitumenType?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  warranty?: string;
+  @ApiPropertyOptional({ description: 'مبلغ تخفیف', example: 10000 })
+  discountAmount?: number;
 
   @ApiProperty({ type: [String], format: 'binary' })
   @IsOptional()
@@ -53,82 +26,4 @@ export class ProductDto {
   @IsString({ each: true })
   image?: string[];
 
-  @ApiProperty()
-  @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
-  price: number;
-
-  @ApiProperty()
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  quantity?: number;
-
-  @ApiProperty()
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  discountPercent?: number;
-
-  @ApiProperty()
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  discountAmount?: number;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  description?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  productName?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  nationalProductCode?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  fiberBaseType?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  internationalCode?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  brandRegistrationNumber?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  coatingType?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  productBenefits?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  applicationType?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  isogumType?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  technicalSpecifications?: string;
 }
