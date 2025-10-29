@@ -1,9 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { IsMobilePhone, IsNotEmpty, IsString } from "class-validator"
+import { IsEmail, IsMobilePhone, IsNotEmpty, IsOptional, IsString } from "class-validator"
 
 export class AuthDto {
     @ApiProperty()
-    @IsMobilePhone('fa-IR') 
+    @IsMobilePhone('fa-IR')
     @IsNotEmpty()
     mobile: string
 }
@@ -18,7 +18,7 @@ export class VerifyOtpCodeDto {
     @IsString()
     @IsNotEmpty()
     code: string
-    
+
     @ApiProperty()
     @IsString()
     @IsNotEmpty()
@@ -30,4 +30,46 @@ export class OtpCodeDto {
     @IsMobilePhone('fa-IR')
     @IsNotEmpty()
     mobile: string
+}
+
+
+
+
+export class AuthAdminDto {
+    @ApiProperty()
+    @IsEmail()
+    @IsNotEmpty()
+    email: string
+
+    @ApiProperty()
+    @IsNotEmpty()
+    password: string
+}
+
+
+
+
+export class CreateAdminDto {
+    @ApiProperty()
+    @IsEmail()
+    @IsNotEmpty()
+    email: string
+
+    @ApiProperty()
+    @IsNotEmpty()
+    password: string
+
+    @ApiProperty()
+    @IsOptional()
+    fullName: string
+
+    @IsString()
+    @IsOptional()
+    avatar?: string;
+
+    @IsString()
+    @IsOptional()
+    role?: 'admin' | 'super-admin'
+
+
 }

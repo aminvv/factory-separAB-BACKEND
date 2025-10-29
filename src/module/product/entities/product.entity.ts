@@ -20,6 +20,12 @@ export class ProductEntity extends BaseEntityCustom {
     @Column('int', { default: 0 })
     quantity: number;
 
+    @Column('int', { default: 0 })
+    rating: number
+
+    @Column('text', { default: 0 })
+    status: string
+
     @Column('decimal', { precision: 5, scale: 2, default: 0 })
     discountPercent: number;
 
@@ -39,7 +45,7 @@ export class ProductEntity extends BaseEntityCustom {
     createdBy: UserEntity;
 
 
-    
-       @OneToMany(()=>ProductDetailEntity,detail=>detail.product)
-    details:ProductDetailEntity[]
+
+    @OneToMany(() => ProductDetailEntity, detail => detail.product)
+    details: ProductDetailEntity[]
 }
