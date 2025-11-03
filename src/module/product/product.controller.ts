@@ -7,11 +7,11 @@ import { CanAccess } from 'src/common/decorators/role.decorator';
 import { Roles } from 'src/common/enums/roles.enum';
 import { pagination } from 'src/common/decorators/pagination.decorator';
 import { PaginationDto } from 'src/common/dtos/paginationDto';
-import { AuthGuard } from '../auth/guards/auth.guard';
 import { swaggerConsumes } from 'src/common/enums/swagger-consumes.enum';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadedImageParam } from 'src/common/decorators/upload-image-.decorator';
+import { AdminGuard } from '../auth/guards/userGuard.guard';
 
 
 
@@ -26,7 +26,7 @@ export class ProductController {
   ) { }
 
   @Post()
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(AdminGuard)
   // @CanAccess(Roles.Admin)
   @ApiConsumes(swaggerConsumes.MultiPartData,swaggerConsumes.Json)
   @UseInterceptors(FileInterceptor('image'))
@@ -39,7 +39,7 @@ export class ProductController {
 
   @Get()
   @pagination()
-    @UseGuards(AuthGuard, RolesGuard)
+    @UseGuards(AdminGuard, RolesGuard)
 
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   findAll(@Query() paginationDto: PaginationDto) {

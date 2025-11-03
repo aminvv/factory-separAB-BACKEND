@@ -4,7 +4,7 @@ import { Column, CreateDateColumn, Entity, UpdateDateColumn } from "typeorm";
 
 
 
-@Entity(EntityName.Product)
+@Entity(EntityName.Admin)
 export class AdminEntity extends BaseEntityCustom {
     @Column({ unique: true })
     email: string
@@ -20,7 +20,7 @@ export class AdminEntity extends BaseEntityCustom {
 
     @Column({ nullable: true })
     avatar: string
-
+ 
     @Column({ default: true })
     isActive: boolean
 

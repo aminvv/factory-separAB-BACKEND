@@ -1,12 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Res, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto, OtpCodeDto, VerifyOtpCodeDto } from './dto/create-auth.dto';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { swaggerConsumes } from 'src/common/enums/swagger-consumes.enum';
 import { TokenUtils } from './utils/token.utils';
-import { Request, Response } from 'express';
+import {  Response } from 'express';
 import { TokenService } from './token.service';
-import { AuthGuard } from './guards/auth.guard';
 
 @ApiTags("Auth")
 @ApiBearerAuth("Authorization")
@@ -35,6 +34,8 @@ export class AuthController {
     return { message, accessToken }
   }
 
+
+
   @Post("/createOtp")
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   createOtpCode(@Body() otpCodeDto: OtpCodeDto) {
@@ -54,7 +55,7 @@ export class AuthController {
 
 
   @Post('/refresh')
-  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  async refresh(@Req() req, @Res({ passthrough: true }) res: Response) {
     const refreshToken = this.tokenUtils.getRefreshTokenFromCookie(req)
     const { newRefreshToken, accessToken } = this.tokenUtils.refreshToken(refreshToken)
     this.tokenUtils.setRefreshTokenCookie(res, newRefreshToken)

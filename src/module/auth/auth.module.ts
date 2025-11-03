@@ -7,16 +7,19 @@ import { OtpEntity } from '../user/entities/otp.entity';
 import { TokenService } from './token.service';
 import { JwtModule } from '@nestjs/jwt';
 import { TokenUtils } from './utils/token.utils';
+import { AuthAdminService } from './AuthAdmin.service';
+import { AuthAdminController } from './authAdmin.controller';
+import { AdminEntity } from '../admin/entities/admin.entity';
 
 @Module({
-  imports:[ TypeOrmModule.forFeature([UserEntity,OtpEntity]),
+  imports:[ TypeOrmModule.forFeature([UserEntity,OtpEntity,AdminEntity]),
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secretKey',
       signOptions: { expiresIn: '1h' },
     }),
 ],
-  controllers: [AuthController],
-  providers: [AuthService ,TokenService,TokenUtils],
-    exports: [AuthService, TokenService, TokenUtils]
+  controllers: [AuthController,AuthAdminController],
+  providers: [AuthService ,AuthAdminService,TokenService,TokenUtils],
+    exports: [AuthService,AuthAdminService, TokenService, TokenUtils]
 })
 export class AuthModule {}
