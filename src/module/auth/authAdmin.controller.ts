@@ -7,7 +7,7 @@ import { TokenUtils } from './utils/token.utils';
 import {  Response } from 'express';
 import { TokenService } from './token.service';
 import { AuthAdminService } from './AuthAdmin.service';
-import { AdminGuard } from './guards/userGuard.guard';
+import { AdminGuard } from './guards/adminGuard.guard';
 
 @ApiTags("Auth")
 @ApiBearerAuth("Authorization")
@@ -18,6 +18,7 @@ export class AuthAdminController {
 
   ) { }
 
+  
   @Post("/login-admin")
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   async loginAdmin(@Body() authAdminDto: AuthAdminDto) {

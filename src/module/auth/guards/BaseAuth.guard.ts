@@ -16,8 +16,8 @@ export abstract class BaseAuthGuard implements CanActivate {
         const token = this.executionToken(request);
 
         try {
-            const payload = this.verifyToken(token)
-            const user = this.findUser(payload.userId)
+            const payload = await this.verifyToken(token)
+            const user = await this.findUser(payload.userId)
             if (!user) throw new UnauthorizedException(AuthMessage.loginAgain);
 
             request.user = user;

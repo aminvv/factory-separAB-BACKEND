@@ -11,7 +11,7 @@ import { swaggerConsumes } from 'src/common/enums/swagger-consumes.enum';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadedImageParam } from 'src/common/decorators/upload-image-.decorator';
-import { AdminGuard } from '../auth/guards/userGuard.guard';
+import { AdminGuard } from '../auth/guards/adminGuard.guard';
 
 
 

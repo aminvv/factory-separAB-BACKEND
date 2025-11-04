@@ -10,9 +10,10 @@ import { ProductAuditService } from './product-audit.service';
 import { ProductDetailController } from './product-detail.controller';
 import { ProductDetailEntity } from './entities/product-detail.entity';
 import { ProductDetailService } from './product-detail.service';
+import { AdminEntity } from '../admin/entities/admin.entity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([ProductEntity,UserEntity,ProductAuditEntity,ProductDetailEntity]),AuthModule],
+  imports:[TypeOrmModule.forFeature([ProductEntity,UserEntity,ProductAuditEntity,ProductDetailEntity ,AdminEntity]),AuthModule ],
   controllers: [ProductController,ProductDetailController],
   providers: [ProductService,ProductAuditService,ProductDetailService],
 })

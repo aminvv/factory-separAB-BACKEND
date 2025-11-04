@@ -10,6 +10,8 @@ import { TokenUtils } from './utils/token.utils';
 import { AuthAdminService } from './AuthAdmin.service';
 import { AuthAdminController } from './authAdmin.controller';
 import { AdminEntity } from '../admin/entities/admin.entity';
+import { AdminGuard } from './guards/adminGuard.guard';
+import { UserGuard } from './guards/userGuard.guard';
 
 @Module({
   imports:[ TypeOrmModule.forFeature([UserEntity,OtpEntity,AdminEntity]),
@@ -19,7 +21,7 @@ import { AdminEntity } from '../admin/entities/admin.entity';
     }),
 ],
   controllers: [AuthController,AuthAdminController],
-  providers: [AuthService ,AuthAdminService,TokenService,TokenUtils],
-    exports: [AuthService,AuthAdminService, TokenService, TokenUtils]
+  providers: [AuthService ,AuthAdminService,TokenService,TokenUtils , AdminGuard, UserGuard],
+    exports: [AuthService,AuthAdminService, TokenService, TokenUtils, AdminGuard, UserGuard]
 })
 export class AuthModule {}
