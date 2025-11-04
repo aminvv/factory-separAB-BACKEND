@@ -3,19 +3,21 @@ import { AppModule } from './app/app.module';
 import { swaggerConfigInit } from './config/swagger.config';
 import * as cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
 
   app.useGlobalPipes(new ValidationPipe({
-    whitelist: false,     
-    forbidNonWhitelisted: true, 
-    transform: true,    
+    whitelist: false,
+    forbidNonWhitelisted: true,
+    transform: true,
   }));
 
 
   app.use(cookieParser());
+  app.useGlobalFilters(new AllExceptionsFilter());
   app.enableCors({
     origin: 'http://localhost:3000',
     credentials: true
@@ -29,4 +31,3 @@ async function bootstrap() {
   });
 }
 bootstrap();
- 
