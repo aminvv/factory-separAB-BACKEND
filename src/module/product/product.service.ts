@@ -11,29 +11,38 @@ import { PaginationDto } from 'src/common/dtos/paginationDto';
 import { paginationGenerator, paginationSolver } from 'src/common/utils/pagination.util';
 import { ProductAuditService } from './product-audit.service';
 import { computeChanges } from 'src/common/utils/compute-changes.util ';
+import { AdminEntity } from '../admin/entities/admin.entity';
 
 @Injectable({ scope: Scope.REQUEST })
 export class ProductService {
   constructor(
     @Inject(REQUEST) private request: Request,
     @InjectRepository(ProductEntity) private productRepository: Repository<ProductEntity>,
+    @InjectRepository(AdminEntity) private adminRepository: Repository<AdminEntity>,
     private auditService: ProductAuditService,
-  ) {}
+  ) { }
 
 
 
 
 
   // ================= CREATE =================
-  async createProduct(productDto: ProductDto ,imageUrl:string) {
-    const user = this.request.user;
-    if (!user) {
+  async createProduct(productDto: ProductDto, imageUrls: string[] | string) {
+    const userJwt = this.request.user;
+    const images=Array.isArray(imageUrls)?imageUrls:[imageUrls]
+    if (!userJwt) {
       throw new NotFoundException(NotFoundMessage.NotFoundUser)
+    }
+
+    
+    const user = await this.adminRepository.findOne({ where: { id: userJwt.id } });
+    if (!user) {
+      throw new NotFoundException('User not found in database');
     }
 
     const product = this.productRepository.create({
       ...productDto,
-      image: imageUrl ? [imageUrl] : productDto.image,
+      image: images,
       createdBy: user,
     });
 
@@ -41,11 +50,10 @@ export class ProductService {
 
 
     await this.auditService.log(saved.id, 'CREATE', user?.id ?? null, { before: null, after: saved }, 'created product')
-
     return {
       message: 'Product created successfully',
       product: saved,
-    }; 
+    };
   }
 
 
@@ -84,7 +92,7 @@ export class ProductService {
     }
     return product
   }
- 
+
 
 
 

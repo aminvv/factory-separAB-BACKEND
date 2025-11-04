@@ -9,8 +9,12 @@ import { AddDetailDto, UpdateAddDetailDto } from './dto/detail.dto';
 @ApiTags("product-detail")
 export class ProductDetailController {
   constructor(private readonly productDetailService: ProductDetailService) { }
-  @Post("/create-product")
-  @ApiConsumes(swaggerConsumes.UrlEncoded)
+
+
+
+
+  @Post("/create-detail")
+  @ApiConsumes(swaggerConsumes.Json)
   create(@Body() addDetailDto: AddDetailDto) {
     return this.productDetailService.create(addDetailDto)
   }

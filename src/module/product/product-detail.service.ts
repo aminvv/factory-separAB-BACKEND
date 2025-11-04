@@ -1,6 +1,6 @@
-import {  Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {  Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ProductService } from './product.service';
 import { ProductDetailEntity } from './entities/product-detail.entity';
 import { AddDetailDto, UpdateAddDetailDto } from './dto/detail.dto';
@@ -14,8 +14,13 @@ export class ProductDetailService {
     ) { }
 
 
+
+
     async create(detailDto: AddDetailDto) {
         const { key, productId, value } = detailDto
+        if (!productId) {
+            throw new BadRequestException('productId is required');
+        }
         await this.productService.findOne(productId)
         await this.productDetailRepository.insert({
             key,
@@ -28,33 +33,43 @@ export class ProductDetailService {
         }
     }
 
-async update(id: number, updateAddDetailDto: UpdateAddDetailDto) {
-  const { key, productId, value } = updateAddDetailDto;
-  const detail = await this.findOne(id);
-
-  if (!detail) {
-    throw new NotFoundException(`Detail with id ${id} not found`)
-  }
-
-  if (productId) {
-    await this.productService.findOne(productId)
-    detail.productId = productId 
-  }
-
-  if (key) detail.key = key;
-  if (value) detail.value = value;
-
-  await this.productDetailRepository.save(detail);
-
-  return {
-    message: "Update detail of product successfully",
-  };
-}
 
 
-    async find(productId:number) {
+
+
+
+
+
+
+
+
+    async update(id: number, updateAddDetailDto: UpdateAddDetailDto) {
+        const { key, productId, value } = updateAddDetailDto;
+        const detail = await this.findOne(id);
+
+        if (!detail) {
+            throw new NotFoundException(`Detail with id ${id} not found`)
+        }
+
+        if (productId) {
+            await this.productService.findOne(productId)
+            detail.productId = productId
+        }
+
+        if (key) detail.key = key;
+        if (value) detail.value = value;
+
+        await this.productDetailRepository.save(detail);
+
+        return {
+            message: "Update detail of product successfully",
+        };
+    }
+
+
+    async find(productId: number) {
         return this.productDetailRepository.find({
-            where: {productId},
+            where: { productId },
         })
     }
 

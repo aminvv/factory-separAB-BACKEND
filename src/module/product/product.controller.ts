@@ -9,7 +9,7 @@ import { pagination } from 'src/common/decorators/pagination.decorator';
 import { PaginationDto } from 'src/common/dtos/paginationDto';
 import { swaggerConsumes } from 'src/common/enums/swagger-consumes.enum';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { UploadedImageParam } from 'src/common/decorators/upload-image-.decorator';
 import { AdminGuard } from '../auth/guards/adminGuard.guard';
 
@@ -25,21 +25,19 @@ export class ProductController {
     private readonly productService: ProductService,
   ) { }
 
-  @Post()
+  @Post('/create-product')
   @UseGuards(AdminGuard)
   // @CanAccess(Roles.Admin)
-  @ApiConsumes(swaggerConsumes.MultiPartData,swaggerConsumes.Json)
-  @UseInterceptors(FileInterceptor('image'))
-  async create(@Body() productDto: ProductDto, @UploadedImageParam('product') imageUrl: string) {
-    await this.productService.createProduct(productDto,imageUrl);
-    return {
-   message :" Product created successfully"
-    }
+  @ApiConsumes(swaggerConsumes.MultiPartData, swaggerConsumes.Json)
+  @UseInterceptors(FilesInterceptor('image',5))
+  async create(@Body() productDto: ProductDto, @UploadedImageParam('product') imageUrl: string[] | string) {
+    return await this.productService.createProduct(productDto, imageUrl);
+
   }
 
   @Get()
   @pagination()
-    @UseGuards(AdminGuard, RolesGuard)
+  @UseGuards(AdminGuard, RolesGuard)
 
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   findAll(@Query() paginationDto: PaginationDto) {
@@ -64,7 +62,7 @@ export class ProductController {
     return this.productService.remove(+id);
   }
 
- 
+
 
 
   @Post('upload-image')

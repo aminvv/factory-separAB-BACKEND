@@ -3,6 +3,7 @@ import { EntityName } from "src/common/enums/entity.enum";
 import { UserEntity } from "src/module/user/entities/user.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, } from "typeorm";
 import { ProductDetailEntity } from "./product-detail.entity";
+import { AdminEntity } from "src/module/admin/entities/admin.entity";
 
 
 
@@ -41,8 +42,8 @@ export class ProductEntity extends BaseEntityCustom {
     @CreateDateColumn()
     create_at: Date;
 
-    @ManyToOne(() => UserEntity, (user) => user.products, { eager: true })
-    createdBy: UserEntity;
+    @ManyToOne(() => AdminEntity, (user) => user.products, { eager: true })
+    createdBy: AdminEntity;
 
 
 

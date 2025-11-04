@@ -1,6 +1,7 @@
 import { BaseEntityCustom } from "src/common/abstracts/EntityBasecustom";
 import { EntityName } from "src/common/enums/entity.enum";
-import { Column, CreateDateColumn, Entity, UpdateDateColumn } from "typeorm";
+import { ProductEntity } from "src/module/product/entities/product.entity";
+import { Column, CreateDateColumn, Entity, OneToMany, UpdateDateColumn } from "typeorm";
 
 
 
@@ -20,7 +21,7 @@ export class AdminEntity extends BaseEntityCustom {
 
     @Column({ nullable: true })
     avatar: string
- 
+
     @Column({ default: true })
     isActive: boolean
 
@@ -29,4 +30,7 @@ export class AdminEntity extends BaseEntityCustom {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @OneToMany(() => ProductEntity, (product) => product.createdBy)
+    products: ProductEntity[]
 }
