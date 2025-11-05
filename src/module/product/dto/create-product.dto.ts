@@ -26,4 +26,11 @@ export class ProductDto {
   @IsString({ each: true })
   image?: string[];
 
+
+  details?: {
+    id?: number;
+    key: string;
+    value: string;
+  }[];
+
 }

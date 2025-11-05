@@ -1,8 +1,4 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
-import { ProductService } from './product.service';
-import { ProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { RolesGuard } from '../auth/guards/role.guard';
 import { CanAccess } from 'src/common/decorators/role.decorator';
 import { Roles } from 'src/common/enums/roles.enum';
 import { pagination } from 'src/common/decorators/pagination.decorator';
@@ -11,7 +7,10 @@ import { swaggerConsumes } from 'src/common/enums/swagger-consumes.enum';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { UploadedImageParam } from 'src/common/decorators/upload-image-.decorator';
-import { AdminGuard } from '../auth/guards/adminGuard.guard';
+import { ProductService } from '../services/product.service';
+import { AdminGuard } from 'src/module/auth/guards/adminGuard.guard';
+import { ProductDto } from '../dto/create-product.dto';
+import { UpdateProductDto } from '../dto/update-product.dto';
 
 
 
@@ -37,7 +36,7 @@ export class ProductController {
 
   @Get()
   @pagination()
-  @UseGuards(AdminGuard, RolesGuard)
+  @UseGuards(AdminGuard)
 
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   findAll(@Query() paginationDto: PaginationDto) {
@@ -50,9 +49,11 @@ export class ProductController {
     return this.productService.findOne(+id);
   }
 
+
+  @UseGuards(AdminGuard)
   @Patch(':id')
   @ApiConsumes(swaggerConsumes.UrlEncoded)
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto,) {
     return this.productService.update(+id, updateProductDto);
   }
 

@@ -9,7 +9,7 @@ import { TokenService } from './token.service';
 import { AuthAdminService } from './AuthAdmin.service';
 import { AdminGuard } from './guards/adminGuard.guard';
 
-@ApiTags("Auth")
+@ApiTags("AuthAdmin")
 @ApiBearerAuth("Authorization")
 @Controller('authAdmin')
 export class AuthAdminController {

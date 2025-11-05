@@ -13,6 +13,6 @@ export class ProductDetailEntity extends BaseEntityCustom {
     @Column()
     value: string
 
-    @ManyToOne(()=>ProductEntity,product=>product.details,{onDelete:"CASCADE"})
-    product:ProductEntity
+ @ManyToOne(() => ProductEntity, product => product.details, { onDelete: 'CASCADE' })
+product: ProductEntity;
 }

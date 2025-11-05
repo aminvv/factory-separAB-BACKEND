@@ -9,6 +9,9 @@ import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
 export class UserGuard extends BaseAuthGuard {
+
+
+   protected roleKey: 'user' = 'user'
   constructor(
     @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
     private tokenService: TokenService 

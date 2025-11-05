@@ -10,6 +10,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
 export class AdminGuard extends BaseAuthGuard {
+ protected roleKey:'admin'='admin'
+
   constructor(
     @InjectRepository(AdminEntity) private adminRepository: Repository<AdminEntity>,
     private tokenService: TokenService 

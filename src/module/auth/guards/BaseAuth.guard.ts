@@ -9,6 +9,7 @@ import { AuthService } from "../auth.service";
 @Injectable()
 export abstract class BaseAuthGuard implements CanActivate {
 
+    protected abstract roleKey: 'user' | 'admin'
     constructor() { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -20,7 +21,8 @@ export abstract class BaseAuthGuard implements CanActivate {
             const user = await this.findUser(payload.userId)
             if (!user) throw new UnauthorizedException(AuthMessage.loginAgain);
 
-            request.user = user;
+            request [this.roleKey]=user
+
             return true;
 
         } catch (err) {

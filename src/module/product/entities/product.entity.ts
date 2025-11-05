@@ -47,6 +47,9 @@ export class ProductEntity extends BaseEntityCustom {
 
 
 
-    @OneToMany(() => ProductDetailEntity, detail => detail.product)
+    @OneToMany(() => ProductDetailEntity, detail => detail.product,{
+        cascade: true,
+        eager: true,
+    })
     details: ProductDetailEntity[]
 }
