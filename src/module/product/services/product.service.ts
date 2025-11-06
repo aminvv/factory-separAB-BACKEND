@@ -14,6 +14,7 @@ import { computeChanges } from 'src/common/utils/compute-changes.util ';
 import { AdminEntity } from '../../admin/entities/admin.entity';
 import { isArray } from 'class-validator';
 import { ProductDetailEntity } from '../entities/product-detail.entity';
+import { json } from 'stream/consumers';
 
 @Injectable({ scope: Scope.REQUEST })
 export class ProductService {
@@ -64,8 +65,7 @@ export class ProductService {
 
 
 // ================= UPDATE =================
-// ================= UPDATE =================
-async update(id: number, updateProductDto: UpdateProductDto) {
+async update(id: number, updateProductDto: UpdateProductDto, imageUrls: string[] | string) {
   const admin = this.request.admin;
 
   const product = await this.productRepository.findOne({
@@ -88,8 +88,6 @@ async update(id: number, updateProductDto: UpdateProductDto) {
 
   const beforeImportant: any = {};
   for (const field of importantFields) beforeImportant[field] = product[field];
-
-  // Parse کردن details اگر string است (برای form-data)
   if (updateProductDto.details && typeof updateProductDto.details === 'string') {
     try {
       updateProductDto.details = JSON.parse(updateProductDto.details);
@@ -98,24 +96,26 @@ async update(id: number, updateProductDto: UpdateProductDto) {
     }
   }
 
-  // آپدیت فیلدهای اصلی محصول
   for (const key of Object.keys(updateProductDto)) {
     if (updateProductDto[key] !== undefined && key !== 'details' && key !== 'product') {
       product[key] = updateProductDto[key];
     }
   }
 
-  // 🔥 منطق کامل Sync برای details
+  if (imageUrls && Array.isArray(imageUrls) && imageUrls.length > 0){
+    product.image=imageUrls
+  }else if(updateProductDto.image && typeof updateProductDto.image ==="string"){
+    product.image=updateProductDto.image
+  }
+
+  Object.assign(product, updateProductDto);
+
   if (updateProductDto.details && Array.isArray(updateProductDto.details)) {
     const existingDetails = product.details ?? [];
-    
-    // 🔥 FIX: تعیین نوع صریح برای آرایه
     const detailsToSave: ProductDetailEntity[] = [];
 
-    // 1️⃣ آپدیت جزئیات موجود و اضافه کردن جزئیات جدید
     for (const detailDto of updateProductDto.details) {
       if (detailDto.id) {
-        // ✅ اگر ID دارد -> پیدا کن و آپدیت کن
         const existing = existingDetails.find(d => d.id === detailDto.id);
         if (existing) {
           existing.key = detailDto.key ?? existing.key;
@@ -123,7 +123,6 @@ async update(id: number, updateProductDto: UpdateProductDto) {
           detailsToSave.push(existing);
         }
       } else {
-        // ✅ اگر ID ندارد -> جدید ایجاد کن
         const newDetail = this.productDetailRepository.create({
           productId: id,
           key: detailDto.key,
@@ -135,26 +134,11 @@ async update(id: number, updateProductDto: UpdateProductDto) {
       }
     }
 
-    // 2️⃣ پیدا کردن جزئیاتی که باید حذف شوند
-    const dtoIds = updateProductDto.details
-      .filter(d => d?.id)
-      .map(d => d.id);
-    
-    const toRemove = existingDetails.filter(d => 
-      d.id && !dtoIds.includes(d.id)
-    );
-
-    // 3️⃣ اجرای عملیات
     if (detailsToSave.length > 0) {
       await this.productDetailRepository.save(detailsToSave);
     }
-    
-    if (toRemove.length > 0) {
-      await this.productDetailRepository.remove(toRemove);
-    }
 
-    // آپدیت رابطه محصول - فقط مواردی که حذف نشده‌اند
-    product.details = existingDetails.filter(d => !toRemove.includes(d));
+    product.details = existingDetails;
   }
 
   const saved = await this.productRepository.save(product);
@@ -179,7 +163,6 @@ async update(id: number, updateProductDto: UpdateProductDto) {
     product: saved,
   };
 }
-
 
 
 

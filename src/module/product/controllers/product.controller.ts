@@ -48,15 +48,17 @@ export class ProductController {
   findOne(@Param('id') id: string) {
     return this.productService.findOne(+id);
   }
-
+  
 
   @UseGuards(AdminGuard)
-  @Patch(':id')
+  @Patch('edit-product/:id')
   @ApiConsumes(swaggerConsumes.UrlEncoded)
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto,) {
-    return this.productService.update(+id, updateProductDto);
+  // @UseInterceptors(FilesInterceptor('image',5))
+  
+  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto,@UploadedImageParam('product') imageUrl: string[] | string) {
+    return this.productService.update(+id, updateProductDto,imageUrl);
   }
-
+  
   @Delete(':id')
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   remove(@Param('id') id: string) {
