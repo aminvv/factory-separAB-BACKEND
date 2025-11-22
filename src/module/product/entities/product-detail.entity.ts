@@ -1,5 +1,5 @@
 
-import { Column, Entity, ManyToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { ProductEntity } from "./product.entity";
 import { EntityName } from "src/common/enums/entity.enum";
 import { BaseEntityCustom } from "src/common/abstracts/EntityBasecustom";
@@ -13,6 +13,7 @@ export class ProductDetailEntity extends BaseEntityCustom {
     @Column()
     value: string
 
- @ManyToOne(() => ProductEntity, product => product.details, { onDelete: 'CASCADE' })
-product: ProductEntity;
+    @ManyToOne(() => ProductEntity, product => product.details, { onDelete: 'CASCADE' })
+    @JoinColumn({name:"productId"})
+    product: ProductEntity;
 }

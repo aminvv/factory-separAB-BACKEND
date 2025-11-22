@@ -24,9 +24,6 @@ export class ProductEntity extends BaseEntityCustom {
     @Column('int', { default: 0 })
     rating: number
 
-    @Column('text', { default: 0 })
-    status: string
-
     @Column('decimal', { precision: 5, scale: 2, default: 0 })
     discountPercent: number;
 
@@ -36,8 +33,13 @@ export class ProductEntity extends BaseEntityCustom {
     @Column({ type: 'text', nullable: true })
     description: string;
 
-    @Column("text", { array: true, nullable: true })
+    @Column({ type: 'text', array: true, nullable: true })
     image: string[];
+
+
+    @Column({ type: 'bool', default: true })
+    status: boolean;
+
 
     @CreateDateColumn()
     create_at: Date;
@@ -47,7 +49,7 @@ export class ProductEntity extends BaseEntityCustom {
 
 
 
-    @OneToMany(() => ProductDetailEntity, detail => detail.product,{
+    @OneToMany(() => ProductDetailEntity, detail => detail.product, {
         cascade: true,
         eager: true,
     })

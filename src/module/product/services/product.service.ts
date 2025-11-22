@@ -31,13 +31,18 @@ export class ProductService {
 
 
   // ================= CREATE =================
-  async createProduct(productDto: ProductDto, imageUrls: string[] | string) {
+  async createProduct(productDto: ProductDto) {
     const adminJwt = this.request.admin;
-    const images = Array.isArray(imageUrls) ? imageUrls : [imageUrls]
+    // const images = Array.isArray(productDto.image) ? productDto.image : [productDto.image]
     if (!adminJwt) {
       throw new NotFoundException(NotFoundMessage.NotFoundUser)
     }
 
+    const images = Array.isArray(productDto.image)
+      ? productDto.image.filter(Boolean)
+      : productDto.image
+        ? [productDto.image]
+        : [];
 
     const user = await this.adminRepository.findOne({ where: { id: adminJwt.id } });
     if (!user) {
@@ -64,105 +69,52 @@ export class ProductService {
 
 
 
-// ================= UPDATE =================
-async update(id: number, updateProductDto: UpdateProductDto, imageUrls: string[] | string) {
-  const admin = this.request.admin;
+  // ================= UPDATE =================
+  async update(id: number, updateProductDto: UpdateProductDto) {
 
-  const product = await this.productRepository.findOne({
-    where: { id },
-    relations: ['details'],
-  });
-  if (!product) {
-    throw new NotFoundException(NotFoundMessage.NotFound);
-  }
+    const product = await this.productRepository.findOne({
+      where: { id },
+      relations: ['details'],
+    });
+    if (!product) throw new NotFoundException(NotFoundMessage.NotFound);
 
-  const importantFields = [
-    'price',
-    'discountAmount',
-    'productName',
-    'productCode',
-    'discountPercent',
-    'quantity',
-    'image',
-  ];
-
-  const beforeImportant: any = {};
-  for (const field of importantFields) beforeImportant[field] = product[field];
-  if (updateProductDto.details && typeof updateProductDto.details === 'string') {
-    try {
-      updateProductDto.details = JSON.parse(updateProductDto.details);
-    } catch (e) {
-      updateProductDto.details = [];
-    }
-  }
-
-  for (const key of Object.keys(updateProductDto)) {
-    if (updateProductDto[key] !== undefined && key !== 'details' && key !== 'product') {
-      product[key] = updateProductDto[key];
-    }
-  }
-
-  if (imageUrls && Array.isArray(imageUrls) && imageUrls.length > 0){
-    product.image=imageUrls
-  }else if(updateProductDto.image && typeof updateProductDto.image ==="string"){
-    product.image=updateProductDto.image
-  }
-
-  Object.assign(product, updateProductDto);
-
-  if (updateProductDto.details && Array.isArray(updateProductDto.details)) {
-    const existingDetails = product.details ?? [];
-    const detailsToSave: ProductDetailEntity[] = [];
-
-    for (const detailDto of updateProductDto.details) {
-      if (detailDto.id) {
-        const existing = existingDetails.find(d => d.id === detailDto.id);
-        if (existing) {
-          existing.key = detailDto.key ?? existing.key;
-          existing.value = detailDto.value ?? existing.value;
-          detailsToSave.push(existing);
-        }
-      } else {
-        const newDetail = this.productDetailRepository.create({
-          productId: id,
-          key: detailDto.key,
-          value: detailDto.value,
-          product: product,
-        });
-        existingDetails.push(newDetail);
-        detailsToSave.push(newDetail);
+    for (const key of Object.keys(updateProductDto)) {
+      if (updateProductDto[key] !== undefined) {
+        product[key] = updateProductDto[key];
       }
     }
 
-    if (detailsToSave.length > 0) {
-      await this.productDetailRepository.save(detailsToSave);
+    product.price = Number(product.price) || 0;
+    product.quantity = Number(product.quantity) || 0;
+    product.rating = Number(product.rating) || 0;
+    product.discountAmount = Number(product.discountAmount) || 0;
+    product.discountPercent = Number(product.discountPercent) || 0;
+
+    if (!product.image) product.image = [];
+    if (updateProductDto.image !== undefined) {
+      let incomingImages: string[] = [];
+
+      if (typeof updateProductDto.image === 'string') {
+        try {
+          incomingImages = JSON.parse(updateProductDto.image);
+        } catch (e) {
+          console.error('خطا در پارس images:', e);
+          incomingImages = [];
+        }
+      } else if (Array.isArray(updateProductDto.image)) {
+        incomingImages = updateProductDto.image;
+      }
+
+      product.image = incomingImages
+        .filter(url => typeof url === 'string' && url.includes('cloudinary.com'))
+        .slice(0, 10);
     }
 
-    product.details = existingDetails;
+
+
+    const saved = await this.productRepository.save(product);
+    return { message: 'Product updated successfully', product: saved };
   }
-
-  const saved = await this.productRepository.save(product);
-
-  const afterImportant: any = {};
-  for (const field of importantFields) afterImportant[field] = saved[field];
-
-  const changes = computeChanges(beforeImportant, afterImportant, importantFields);
-
-  if (Object.keys(changes).length > 0) {
-    await this.auditService.log(
-      saved.id,
-      'UPDATE',
-      admin?.id,
-      changes,
-      'updated product',
-    );
-  }
-
-  return {
-    message: 'Product updated successfully',
-    product: saved,
-  };
-}
 
 
 

@@ -2,35 +2,40 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsOptional, IsArray } from 'class-validator';
 
 export class ProductDto {
-  @ApiProperty({ description: 'کد محصول', example: 'PRD001' })
+  0
+  @ApiProperty()
   productCode: string;
 
-  @ApiProperty({ description: 'نام محصول', example: 'ایزوگام پشم شیشه' })
+  @ApiProperty()
   productName: string;
 
-  @ApiProperty({ description: 'قیمت محصول', example: 120000 })
+  @ApiProperty()
   price: number;
 
-  @ApiProperty({ description: 'تعداد محصول در انبار', example: 50 })
+  @ApiProperty()
   quantity: number;
 
-  @ApiPropertyOptional({ description: 'درصد تخفیف', example: 10 })
+  @ApiProperty()
+  rating: number;
+
+  @ApiProperty()
+  status: boolean;
+
+  @ApiPropertyOptional()
   discountPercent?: number;
 
-  @ApiPropertyOptional({ description: 'مبلغ تخفیف', example: 10000 })
+  @ApiPropertyOptional()
   discountAmount?: number;
 
-  @ApiProperty({ type: [String], format: 'binary' })
+  @ApiPropertyOptional()
+  description?: string;
+
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
   image?: string[];
 
-
-  details?: {
-    id?: number;
-    key: string;
-    value: string;
-  }[];
-
 }
+
+
+
+ 
