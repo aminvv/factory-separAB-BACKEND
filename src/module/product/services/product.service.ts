@@ -10,11 +10,8 @@ import { NotFoundMessage } from 'src/common/enums/message.enum';
 import { PaginationDto } from 'src/common/dtos/paginationDto';
 import { paginationGenerator, paginationSolver } from 'src/common/utils/pagination.util';
 import { ProductAuditService } from './product-audit.service';
-import { computeChanges } from 'src/common/utils/compute-changes.util ';
 import { AdminEntity } from '../../admin/entities/admin.entity';
-import { isArray } from 'class-validator';
 import { ProductDetailEntity } from '../entities/product-detail.entity';
-import { json } from 'stream/consumers';
 
 @Injectable({ scope: Scope.REQUEST })
 export class ProductService {
@@ -33,7 +30,6 @@ export class ProductService {
   // ================= CREATE =================
   async createProduct(productDto: ProductDto) {
     const adminJwt = this.request.admin;
-    // const images = Array.isArray(productDto.image) ? productDto.image : [productDto.image]
     if (!adminJwt) {
       throw new NotFoundException(NotFoundMessage.NotFoundUser)
     }
@@ -60,7 +56,7 @@ export class ProductService {
 
     await this.auditService.log(saved.id, 'CREATE', user?.id ?? null, { before: null, after: saved }, 'created product')
     return {
-      message: 'Product created successfully',
+      message: 'محصول با موفقیت ساخته شد',
       product: saved,
     };
   }
@@ -72,11 +68,23 @@ export class ProductService {
   // ================= UPDATE =================
   async update(id: number, updateProductDto: UpdateProductDto) {
 
+    const adminJwt = this.request.admin;
+    if (!adminJwt) {
+      throw new NotFoundException(NotFoundMessage.NotFoundUser);
+    }
+
+    const user = await this.adminRepository.findOne({ where: { id: adminJwt.id } });
+    if (!user) throw new NotFoundException('User not found in database');
+
     const product = await this.productRepository.findOne({
       where: { id },
       relations: ['details'],
     });
-    if (!product) throw new NotFoundException(NotFoundMessage.NotFound);
+    if (!product) throw new NotFoundException(NotFoundMessage.NotFound)
+
+
+
+    const original = JSON.parse(JSON.stringify(product));
 
     for (const key of Object.keys(updateProductDto)) {
       if (updateProductDto[key] !== undefined) {
@@ -84,36 +92,39 @@ export class ProductService {
       }
     }
 
-    product.price = Number(product.price) || 0;
-    product.quantity = Number(product.quantity) || 0;
-    product.rating = Number(product.rating) || 0;
-    product.discountAmount = Number(product.discountAmount) || 0;
-    product.discountPercent = Number(product.discountPercent) || 0;
 
-    if (!product.image) product.image = [];
+
+
     if (updateProductDto.image !== undefined) {
-      let incomingImages: string[] = [];
-
-      if (typeof updateProductDto.image === 'string') {
-        try {
-          incomingImages = JSON.parse(updateProductDto.image);
-        } catch (e) {
-          console.error('خطا در پارس images:', e);
-          incomingImages = [];
-        }
-      } else if (Array.isArray(updateProductDto.image)) {
-        incomingImages = updateProductDto.image;
-      }
-
-      product.image = incomingImages
-        .filter(url => typeof url === 'string' && url.includes('cloudinary.com'))
-        .slice(0, 10);
+      product.image = Array.isArray(updateProductDto.image)
+        ? updateProductDto.image.slice(0, 5)
+        : [];
     }
 
 
+    const before: any = {};
+    const after: any = {};
+
+    for (const key of Object.keys(product)) {
+      if (JSON.stringify(original[key]) !== JSON.stringify(product[key])) {
+        before[key] = original[key];
+        after[key] = product[key];
+      }
+    }
+
 
     const saved = await this.productRepository.save(product);
-    return { message: 'Product updated successfully', product: saved };
+    if (Object.keys(before).length > 0) {
+      await this.auditService.log(
+        saved.id,
+        'UPDATE',
+        user.id,
+        { before, after },
+        'updated product'
+      );
+    }
+
+    return { message: 'محصول  با  موفقیت ویراش شد', product: saved };
   }
 
 
@@ -184,6 +195,6 @@ export class ProductService {
 
     await this.productRepository.delete({ id: product.id });
 
-    return { message: 'Product deleted successfully' };
+    return { message: 'حذف با موفقیت انجام شد' };
   }
 }
