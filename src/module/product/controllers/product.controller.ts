@@ -27,8 +27,7 @@ export class ProductController {
   @Post('/create-product')
   @UseGuards(AdminGuard)
   // @CanAccess(Roles.Admin)
-  @ApiConsumes(swaggerConsumes.MultiPartData, swaggerConsumes.Json)
-  // @UseInterceptors(FilesInterceptor('image',5))
+  @ApiConsumes( swaggerConsumes.Json)
   async create(@Body() productDto: ProductDto,) {
     return await this.productService.createProduct(productDto);
 

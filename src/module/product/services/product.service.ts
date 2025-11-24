@@ -34,11 +34,17 @@ export class ProductService {
       throw new NotFoundException(NotFoundMessage.NotFoundUser)
     }
 
-    const images = Array.isArray(productDto.image)
-      ? productDto.image.filter(Boolean)
-      : productDto.image
-        ? [productDto.image]
-        : [];
+    const imageInput = productDto.image || [];
+    let images: string[] = [];
+
+    if (typeof imageInput === 'string') {
+      images = imageInput
+        .split(',')
+        .map(url => url.trim())
+        .filter(url => url.includes('cloudinary.com'));
+    } else if (Array.isArray(imageInput)) {
+      images = imageInput.filter(url => typeof url === 'string' && url.includes('cloudinary.com'));
+    }
 
     const user = await this.adminRepository.findOne({ where: { id: adminJwt.id } });
     if (!user) {

@@ -30,12 +30,11 @@ export class ProductDto {
   @ApiPropertyOptional()
   description?: string;
 
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
-  @IsArray()
-  image?: string[];
+  image?: string | string[];
 
 }
 
 
 
- 
