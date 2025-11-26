@@ -12,6 +12,7 @@ import { paginationGenerator, paginationSolver } from 'src/common/utils/paginati
 import { ProductAuditService } from './product-audit.service';
 import { AdminEntity } from '../../admin/entities/admin.entity';
 import { ProductDetailEntity } from '../entities/product-detail.entity';
+import { CloudinaryService } from 'src/common/services/cloudinary.service';
 
 @Injectable({ scope: Scope.REQUEST })
 export class ProductService {
@@ -21,6 +22,7 @@ export class ProductService {
     @InjectRepository(ProductDetailEntity) private productDetailRepository: Repository<ProductDetailEntity>,
     @InjectRepository(AdminEntity) private adminRepository: Repository<AdminEntity>,
     private auditService: ProductAuditService,
+    private cloudinaryService: CloudinaryService,
   ) { }
 
 
@@ -34,14 +36,14 @@ export class ProductService {
       throw new NotFoundException(NotFoundMessage.NotFoundUser)
     }
 
-     const imageInput = productDto.image || [];
-  let images: { url: string; publicId: string }[] = [];
+    const imageInput = productDto.image || [];
+    let images: { url: string; publicId: string }[] = [];
 
-  if (Array.isArray(imageInput)) {
-    images = imageInput
-      .filter(img => img && img.url && img.publicId)
-      .slice(0, 5); 
-  }
+    if (Array.isArray(imageInput)) {
+      images = imageInput
+        .filter(img => img && img.url && img.publicId)
+        .slice(0, 5);
+    }
 
     const user = await this.adminRepository.findOne({ where: { id: adminJwt.id } });
     if (!user) {
@@ -99,10 +101,10 @@ export class ProductService {
 
 
     if (updateProductDto.image !== undefined) {
-      const img=Array.isArray(updateProductDto.image)?updateProductDto.image
-      .filter(img=>img&& img.url&&img.publicId)
-      .slice(0,5):[]
-      product.image=img
+      const img = Array.isArray(updateProductDto.image) ? updateProductDto.image
+        .filter(img => img && img.url && img.publicId)
+        .slice(0, 5) : []
+      product.image = img
     }
 
 
@@ -197,8 +199,24 @@ export class ProductService {
       'deleted product',
     );
 
+
+    if (product.image?.length) {
+      for (const img of product.image) {
+        await this.cloudinaryService.deleteImageUploaded(img.publicId);
+      }
+    }
     await this.productRepository.delete({ id: product.id });
 
     return { message: 'حذف با موفقیت انجام شد' };
   }
+
+  // ================= REMOVE IMAGE UPLOADED =================
+
+  async removeImage(publicId: string) {
+    await this.cloudinaryService.deleteImageUploaded(publicId);
+    return { message: 'عکس با موفقیت حذف شد' };
+  }
+
+
+
 }

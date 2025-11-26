@@ -1,9 +1,9 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CloudinaryService } from 'src/common/services/cloudinary.service';
 import { TypeOrmConfig } from 'src/config/typeorm.config';
 import { AuthModule } from 'src/module/auth/auth.module';
-import { TokenUtils } from 'src/module/auth/utils/token.utils';
 import { ProductModule } from 'src/module/product/product.module';
 import { DataSource } from 'typeorm';
 
@@ -14,6 +14,7 @@ import { DataSource } from 'typeorm';
     AuthModule,
     ProductModule,
   ],
+  providers: [ CloudinaryService],
 })
 export class AppModule implements OnModuleInit {
   constructor(private dataSource: DataSource) { }
