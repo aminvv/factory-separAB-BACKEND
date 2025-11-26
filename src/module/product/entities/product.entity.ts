@@ -33,8 +33,8 @@ export class ProductEntity extends BaseEntityCustom {
     @Column({ type: 'text', nullable: true })
     description: string;
 
-    @Column({ type: 'text', array: true, nullable: true })
-    image: string[];
+    @Column({ type: 'json',  nullable: true })
+    image: { url: string; publicId: string }[];
 
 
     @Column({ type: 'bool', default: true })

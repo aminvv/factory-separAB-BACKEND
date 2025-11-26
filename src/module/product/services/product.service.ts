@@ -34,17 +34,14 @@ export class ProductService {
       throw new NotFoundException(NotFoundMessage.NotFoundUser)
     }
 
-    const imageInput = productDto.image || [];
-    let images: string[] = [];
+     const imageInput = productDto.image || [];
+  let images: { url: string; publicId: string }[] = [];
 
-    if (typeof imageInput === 'string') {
-      images = imageInput
-        .split(',')
-        .map(url => url.trim())
-        .filter(url => url.includes('cloudinary.com'));
-    } else if (Array.isArray(imageInput)) {
-      images = imageInput.filter(url => typeof url === 'string' && url.includes('cloudinary.com'));
-    }
+  if (Array.isArray(imageInput)) {
+    images = imageInput
+      .filter(img => img && img.url && img.publicId)
+      .slice(0, 5); 
+  }
 
     const user = await this.adminRepository.findOne({ where: { id: adminJwt.id } });
     if (!user) {
@@ -102,9 +99,10 @@ export class ProductService {
 
 
     if (updateProductDto.image !== undefined) {
-      product.image = Array.isArray(updateProductDto.image)
-        ? updateProductDto.image.slice(0, 5)
-        : [];
+      const img=Array.isArray(updateProductDto.image)?updateProductDto.image
+      .filter(img=>img&& img.url&&img.publicId)
+      .slice(0,5):[]
+      product.image=img
     }
 
 

@@ -38,7 +38,7 @@ export class ProductController {
 
   @UseGuards(AdminGuard)
   @Patch('edit-product/:id')
-  @ApiConsumes(swaggerConsumes.MultiPartData)
+  @ApiConsumes(swaggerConsumes.Json)
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.update(+id, updateProductDto);
   }
@@ -61,7 +61,7 @@ export class ProductController {
 
 
   
-  @Delete(':id')
+  @Delete('delete-product/:id')
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   remove(@Param('id') id: string) {
     return this.productService.remove(+id);
