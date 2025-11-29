@@ -2,6 +2,7 @@ import { BaseEntityCustom } from "src/common/abstracts/EntityBasecustom"
 import { EntityName } from "src/common/enums/entity.enum"
 import { Column, CreateDateColumn, Entity,  OneToMany,  } from "typeorm"
 import { Roles } from "src/common/enums/roles.enum"
+import { CommentsEntity } from "src/module/blog/entities/comment.entity"
 
 
 
@@ -23,6 +24,9 @@ export class UserEntity extends BaseEntityCustom {
     @CreateDateColumn()
     create_at: Date
 
+
+    @OneToMany(()=>CommentsEntity,comment=>comment.user,{cascade:true})
+    blog_comments:CommentsEntity[]
 
 
 }

@@ -67,6 +67,13 @@ export class ProductController {
     return this.productService.remove(+id);
   }
 
+  
+  @Delete('removeImage/:id')
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
+  removeImage(@Param('id') id: string) {
+    return this.productService.removeImage(id);
+  }
+
 
 
 

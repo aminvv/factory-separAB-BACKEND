@@ -11,10 +11,11 @@ import { AdminEntity } from '../admin/entities/admin.entity';
 import { ProductController } from './controllers/product.controller';
 import { ProductAuditService } from './services/product-audit.service';
 import { ProductDetailService } from './services/product-detail.service';
+import { CloudinaryService } from 'src/common/services/cloudinary.service';
 
 @Module({
   imports:[TypeOrmModule.forFeature([ProductEntity,UserEntity,ProductAuditEntity,ProductDetailEntity ,AdminEntity]),AuthModule ],
   controllers: [ProductController,ProductDetailController],
-  providers: [ProductService,ProductAuditService,ProductDetailService],
+  providers: [ProductService,ProductAuditService,ProductDetailService,CloudinaryService],
 })
 export class ProductModule {}
