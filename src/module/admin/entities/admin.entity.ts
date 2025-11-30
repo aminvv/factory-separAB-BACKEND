@@ -1,5 +1,6 @@
 import { BaseEntityCustom } from "src/common/abstracts/EntityBasecustom";
 import { EntityName } from "src/common/enums/entity.enum";
+import { CommentsEntity } from "src/module/blog/entities/comment.entity";
 import { ProductEntity } from "src/module/product/entities/product.entity";
 import { Column, CreateDateColumn, Entity, OneToMany, UpdateDateColumn } from "typeorm";
 
@@ -33,4 +34,7 @@ export class AdminEntity extends BaseEntityCustom {
 
     @OneToMany(() => ProductEntity, (product) => product.createdBy)
     products: ProductEntity[]
+
+        @OneToMany(()=>CommentsEntity,comment=>comment.user,{cascade:true})
+        blog_comments:CommentsEntity[]
 }

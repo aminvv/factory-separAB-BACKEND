@@ -1,12 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
-import { BlogService } from './blog.service';
-import { CreateBlogDto } from './dto/create-blog.dto';
-import { UpdateBlogDto } from './dto/update-blog.dto';
+import { BlogService } from '../services/blog.service';
+import { CreateBlogDto } from '../dto/create-blog.dto';
+import { UpdateBlogDto } from '../dto/update-blog.dto';
 import { pagination } from 'src/common/decorators/pagination.decorator';
 import { PaginationDto } from 'src/common/dtos/paginationDto';
 import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { swaggerConsumes } from 'src/common/enums/swagger-consumes.enum';
-import { AdminGuard } from '../auth/guards/adminGuard.guard';
+import { AdminGuard } from '../../auth/guards/adminGuard.guard';
 
 @Controller('blog')
 @ApiBearerAuth("Authorization")
@@ -29,8 +29,8 @@ export class BlogController {
   
   @Get(':id')
   @ApiConsumes(swaggerConsumes.UrlEncoded)
-  findOne(@Param('id') id: string) {
-    return this.blogService.findOne(+id);
+  findOneWithComments(@Param('id') id: string,@Query()paginationDto:PaginationDto) {
+    return this.blogService.findOneWithComments(+id,paginationDto);
   }
   
   @Patch(':id')

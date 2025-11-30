@@ -1,17 +1,18 @@
 import { Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
-import { CreateBlogDto } from './dto/create-blog.dto';
-import { UpdateBlogDto } from './dto/update-blog.dto';
+import { CreateBlogDto } from '../dto/create-blog.dto';
+import { UpdateBlogDto } from '../dto/update-blog.dto';
 import { Request } from 'express';
 import { REQUEST } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BlogEntity } from './entities/blog.entity';
+import { BlogEntity } from '../entities/blog.entity';
 import { Repository } from 'typeorm';
-import { CommentsEntity } from './entities/comment.entity';
+import { CommentsEntity } from '../entities/comment.entity';
 import { NotFoundMessage, publicMessage } from 'src/common/enums/message.enum';
 import { createSlug, RandomId } from 'src/common/utils/functions.util';
 import { PaginationDto } from 'src/common/dtos/paginationDto';
 import { paginationGenerator, paginationSolver } from 'src/common/utils/pagination.util';
 import { pagination } from 'src/common/decorators/pagination.decorator';
+import { BlogCommentService } from './blog-comment.service';
 
 @Injectable({ scope: Scope.REQUEST })
 export class BlogService {
@@ -21,7 +22,7 @@ export class BlogService {
   constructor(
     @Inject(REQUEST) private request: Request,
     @InjectRepository(BlogEntity) private blogRepository: Repository<BlogEntity>,
-    @InjectRepository(CommentsEntity) private commentBlogRepository: Repository<CommentsEntity>
+    private blogCommentService: BlogCommentService
   ) { }
 
 
@@ -95,12 +96,19 @@ export class BlogService {
 
 
 
-  // =====================   FIND ONE   ======================
-  async findOne(id: number) {
-    const blog = await this.blogRepository.findOneBy({ id })
-    return blog
-  }
+  // =====================   FIND ONE WITH COMMENTS   ======================
+async findOneWithComments(id: number ,paginationDto:PaginationDto) {
+  const blog = await this.blogRepository.findOne({
+    where: { id },
+  });
 
+  if (!blog) throw new NotFoundException(NotFoundMessage.NotFound);
+  const commentsData = await this.blogCommentService.findCommendOfBlog(blog.id, paginationDto)
+  return {
+    blog,
+    commentsData
+  }
+}
 
 
 
@@ -184,6 +192,14 @@ if (Array.isArray(imagesInput)) {
     const blog = await this.blogRepository.findOneBy({ slug })
     return blog
   }
-
-
+  
+  
+  
+  // =====================   CHECK EXIST BLOG BY ID   ======================
+    async checkExistBlogById(id: number) {
+        const blog = await this.blogRepository.findOneBy({ id })
+        if (!blog) throw new NotFoundException(NotFoundMessage.NotFoundPost)
+        return blog
+    }
 }
+
