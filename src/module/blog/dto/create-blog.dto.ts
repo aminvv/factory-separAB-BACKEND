@@ -15,6 +15,9 @@ export class CreateBlogDto {
     @ApiProperty()
     content: string
 
+    @ApiProperty()
+    status: string
+
     @ApiPropertyOptional()
     slug:string
 
@@ -24,6 +27,6 @@ export class CreateBlogDto {
 
     @ApiPropertyOptional({ type: [Object] })
     @IsOptional()
-    image: { url: string; publicId: string }[];
+    thumbnail: { url: string; publicId: string }[];
 
 }

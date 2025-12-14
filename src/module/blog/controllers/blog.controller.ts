@@ -13,27 +13,27 @@ import { AdminGuard } from '../../auth/guards/adminGuard.guard';
 export class BlogController {
   constructor(private readonly blogService: BlogService) { }
 
-  @Post()
+  @Post("create-blog")
   @ApiConsumes(swaggerConsumes.UrlEncoded,swaggerConsumes.Json)
   @UseGuards(AdminGuard)
   create(@Body() createBlogDto: CreateBlogDto) {
     return this.blogService.create(createBlogDto);
   }
 
-  @Get()
+  @Get("get-blogs")
   @pagination()
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   findAll(@Query() paginationDto: PaginationDto) {
     return this.blogService.findAll(paginationDto);
   }
   
-  @Get(':id')
+  @Get('get-blog/:id')
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   findOneWithComments(@Param('id') id: string,@Query()paginationDto:PaginationDto) {
     return this.blogService.findOneWithComments(+id,paginationDto);
   }
   
-  @Patch(':id')
+  @Patch('edit-blog/:id')
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   @UseGuards(AdminGuard)
   update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {

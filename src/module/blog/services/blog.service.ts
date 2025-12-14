@@ -30,7 +30,7 @@ export class BlogService {
   // =====================   CREATE   ======================
   async create(createBlogDto: CreateBlogDto) {
     const adminJwt = this.request.admin
-    let { category, content, description, image, slug, title } = createBlogDto
+    let { category, content, description, thumbnail, slug, title,status } = createBlogDto
 
     if (!adminJwt) {
       throw new NotFoundException(NotFoundMessage.NotFoundUser)
@@ -44,7 +44,7 @@ export class BlogService {
     }
 
 
-    const imageInput = createBlogDto.image || [];
+    const imageInput = createBlogDto.thumbnail || [];
     let images: { url: string; publicId: string }[] = [];
 
     if (Array.isArray(imageInput)) {
@@ -58,8 +58,9 @@ export class BlogService {
       category,
       content,
       description,
-      image: images,
+      thumbnail: images,
       slug,
+      status,
       title,
     })
     await this.blogRepository.save(blog)
@@ -115,7 +116,7 @@ async findOneWithComments(id: number ,paginationDto:PaginationDto) {
   // =====================   UPDATE   ======================
   async update(id: number, updateBlogDto: UpdateBlogDto) {
     const adminJwt = this.request.admin
-    let { category, content, description, image, slug, title } = updateBlogDto
+    let { category, content, description, thumbnail, slug, title } = updateBlogDto
     if (!adminJwt) {
       throw new NotFoundException(NotFoundMessage.NotFoundUser)
     }
@@ -123,13 +124,8 @@ async findOneWithComments(id: number ,paginationDto:PaginationDto) {
     if (!blog) throw new NotFoundException(NotFoundMessage.NotFound)
 
 
-    if (slug) {
-      const isExist = await this.checkBlogBySlug(slug)
-      if (isExist && isExist.id !== id) {
-        slug = slug + "-" + RandomId()
-      }
-    }
-let imagesInput = updateBlogDto.image;
+
+let imagesInput = updateBlogDto.thumbnail;
 
 if (typeof imagesInput === "string") {
   try {
@@ -141,12 +137,19 @@ if (typeof imagesInput === "string") {
 
 if (Array.isArray(imagesInput)) {
   const filtered = imagesInput.filter(i => i?.url && i?.publicId);
-  blog.image = filtered.length > 0 ? filtered.slice(0, 5) : [];
+  blog.thumbnail = filtered.length > 0 ? filtered.slice(0, 5) : [];
 }
 
 
+if (slug) {
+const isExist = await this.checkBlogBySlug(slug)
+if (isExist && isExist.id !== id) {
+slug = slug + "-" + RandomId()
+}
+blog.slug = slug;
+}
 
-    let slugData: string | null = null;
+    let slugData: string | null = null
 
     if (title) {
       slugData = title

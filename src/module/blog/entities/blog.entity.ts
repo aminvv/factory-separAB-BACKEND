@@ -24,8 +24,11 @@ export class BlogEntity extends BaseEntityCustom {
     @Column()
     category: string
 
+    @Column()
+    status: string
+
     @Column({ type: 'json', nullable: true })
-    image: { url: string; publicId: string }[];
+    thumbnail: { url: string; publicId: string }[];
 
 
     @CreateDateColumn()
