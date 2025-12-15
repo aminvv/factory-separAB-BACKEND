@@ -5,6 +5,7 @@ import { CloudinaryService } from 'src/common/services/cloudinary.service';
 import { TypeOrmConfig } from 'src/config/typeorm.config';
 import { AuthModule } from 'src/module/auth/auth.module';
 import { BlogModule } from 'src/module/blog/blog.module';
+import { DiscountModule } from 'src/module/discount/discount.module';
 import { ProductModule } from 'src/module/product/product.module';
 import { DataSource } from 'typeorm';
 
@@ -14,6 +15,7 @@ import { DataSource } from 'typeorm';
     TypeOrmModule.forRoot(TypeOrmConfig()),
     AuthModule,
     ProductModule,
+    DiscountModule,
     BlogModule
   ],
   providers: [ CloudinaryService],

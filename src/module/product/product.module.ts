@@ -17,5 +17,6 @@ import { CloudinaryService } from 'src/common/services/cloudinary.service';
   imports:[TypeOrmModule.forFeature([ProductEntity,UserEntity,ProductAuditEntity,ProductDetailEntity ,AdminEntity]),AuthModule ],
   controllers: [ProductController,ProductDetailController],
   providers: [ProductService,ProductAuditService,ProductDetailService,CloudinaryService],
+  exports: [ProductService],
 })
 export class ProductModule {}
