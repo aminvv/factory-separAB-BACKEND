@@ -7,6 +7,8 @@ import { AuthModule } from 'src/module/auth/auth.module';
 import { BasketModule } from 'src/module/basket/basket.module';
 import { BlogModule } from 'src/module/blog/blog.module';
 import { DiscountModule } from 'src/module/discount/discount.module';
+import { OrderModule } from 'src/module/order/order.module';
+import { PaymentModule } from 'src/module/payment/payment.module';
 import { ProductModule } from 'src/module/product/product.module';
 import { DataSource } from 'typeorm';
 
@@ -18,7 +20,9 @@ import { DataSource } from 'typeorm';
     ProductModule,
     DiscountModule,
     BasketModule,
-    BlogModule
+    PaymentModule,
+    BlogModule,
+    OrderModule,
   ],
   providers: [ CloudinaryService],
 })

@@ -5,6 +5,7 @@ import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, } from "typeorm
 import { ProductDetailEntity } from "./product-detail.entity";
 import { AdminEntity } from "src/module/admin/entities/admin.entity";
 import { BasketEntity } from "src/module/basket/entities/basket.entity";
+import { OrderItemEntity } from "src/module/order/entities/order-items.entity";
 
 
 
@@ -25,7 +26,7 @@ export class ProductEntity extends BaseEntityCustom {
     @Column('int', { default: 0 })
     rating: number
 
-    @Column({ nullable: false ,default: false })
+    @Column({ nullable: false, default: false })
     active_discount: boolean
 
     @Column()
@@ -44,7 +45,7 @@ export class ProductEntity extends BaseEntityCustom {
     @Column({ type: 'bool', default: true })
     status: boolean;
 
- 
+
     @CreateDateColumn()
     create_at: Date;
 
@@ -59,4 +60,7 @@ export class ProductEntity extends BaseEntityCustom {
 
     @OneToMany(() => BasketEntity, basket => basket.product, { cascade: true, eager: true, })
     baskets: BasketEntity[]
+
+    @OneToMany(() => OrderItemEntity, orderItems => orderItems.product)
+    orderItems: OrderItemEntity[]
 }

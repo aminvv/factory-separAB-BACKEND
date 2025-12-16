@@ -11,5 +11,6 @@ import { ProductModule } from '../product/product.module';
   imports:[TypeOrmModule.forFeature([DiscountEntity,ProductEntity]),ProductModule],
   controllers: [DiscountController],
   providers: [DiscountService,],
+  exports:[DiscountService,TypeOrmModule]
 })
 export class DiscountModule {}
