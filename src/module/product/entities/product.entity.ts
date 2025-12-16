@@ -4,6 +4,7 @@ import { UserEntity } from "src/module/user/entities/user.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, } from "typeorm";
 import { ProductDetailEntity } from "./product-detail.entity";
 import { AdminEntity } from "src/module/admin/entities/admin.entity";
+import { BasketEntity } from "src/module/basket/entities/basket.entity";
 
 
 
@@ -24,23 +25,26 @@ export class ProductEntity extends BaseEntityCustom {
     @Column('int', { default: 0 })
     rating: number
 
-    @Column('decimal', { precision: 5, scale: 2, default: 0 })
-    discountPercent: number;
+    @Column({ nullable: false ,default: false })
+    active_discount: boolean
 
-    @Column('decimal', { precision: 12, scale: 2, default: 0 })
-    discountAmount: number;
+    @Column()
+    slug: string
+
+    @Column({ type: "decimal", nullable: true, default: 0 })
+    discount: number
 
     @Column({ type: 'text', nullable: true })
     description: string;
 
-    @Column({ type: 'json',  nullable: true })
+    @Column({ type: 'json', nullable: true })
     image: { url: string; publicId: string }[];
 
 
     @Column({ type: 'bool', default: true })
     status: boolean;
 
-
+ 
     @CreateDateColumn()
     create_at: Date;
 
@@ -49,9 +53,10 @@ export class ProductEntity extends BaseEntityCustom {
 
 
 
-    @OneToMany(() => ProductDetailEntity, detail => detail.product, {
-        cascade: true,
-        eager: true,
-    })
+    @OneToMany(() => ProductDetailEntity, detail => detail.product, { cascade: true, eager: true, })
     details: ProductDetailEntity[]
+
+
+    @OneToMany(() => BasketEntity, basket => basket.product, { cascade: true, eager: true, })
+    baskets: BasketEntity[]
 }

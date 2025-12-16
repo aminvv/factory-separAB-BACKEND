@@ -15,6 +15,10 @@ export class ProductDto {
   @ApiProperty()
   quantity: number;
 
+
+  @ApiProperty()
+  slug: string
+
   @ApiProperty()
   rating: number;
 
@@ -22,10 +26,10 @@ export class ProductDto {
   status: boolean;
 
   @ApiPropertyOptional()
-  discountPercent?: number;
+  discount: number
 
   @ApiPropertyOptional()
-  discountAmount?: number;
+  active_discount: boolean
 
   @ApiPropertyOptional()
   description?: string;

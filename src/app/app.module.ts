@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CloudinaryService } from 'src/common/services/cloudinary.service';
 import { TypeOrmConfig } from 'src/config/typeorm.config';
 import { AuthModule } from 'src/module/auth/auth.module';
+import { BasketModule } from 'src/module/basket/basket.module';
 import { BlogModule } from 'src/module/blog/blog.module';
 import { DiscountModule } from 'src/module/discount/discount.module';
 import { ProductModule } from 'src/module/product/product.module';
@@ -16,6 +17,7 @@ import { DataSource } from 'typeorm';
     AuthModule,
     ProductModule,
     DiscountModule,
+    BasketModule,
     BlogModule
   ],
   providers: [ CloudinaryService],

@@ -15,6 +15,9 @@ export class DiscountService {
     private productService: ProductService,
   ) { }
 
+
+
+  // ==================  CREATE  DISCOUNT ============================
   async create(createDiscountDto: CreateDiscountDto) {
     const { amount, code, expires_in, limit, percent, productId, type } = createDiscountDto
     let discountObject: DeepPartial<DiscountEntity> = { code }
@@ -57,12 +60,15 @@ export class DiscountService {
 
   }
 
+
+
+  // ==================  GET  DISCOUNT BY CODE ============================
   async getDiscountByCode(code: string) {
     const discount = await this.discountRepository.findOneBy({ code })
     return discount
   }
 
-
+  // ==================  UPDATE  DISCOUNT ============================
   async update(id: number, UpdateDiscountDto: UpdateDiscountDto) {
     const discount = await this.discountRepository.findOneBy({ id })
     if (!discount) throw new NotFoundException("not found discount")
@@ -119,7 +125,7 @@ export class DiscountService {
     return await this.discountRepository.find()
   }
 
-
+  // ==================  DELETE  DISCOUNT ============================
   async delete(id: number) {
     const discount = await this.discountRepository.findOneBy({ id })
     if (!discount) throw new NotFoundException("not found discount")
