@@ -35,6 +35,13 @@ namespace NodeJS {
         CLOUDINARY_API_KEY: string
         CLOUDINARY_API_SECRET: string
 
+
+        //ZARINNPAL
+        ZARINNPAL_VERIFY_URL: string
+        ZARINNPAL_REQUEST_URL: string
+        ZARINNPAL_GATEWAY_URL: string
+        ZARINNPAL_MERCHANT_ID: string
+
     }
 
 

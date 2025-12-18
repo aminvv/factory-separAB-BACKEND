@@ -31,58 +31,6 @@ export class ProductService {
 
 
 
-  // ================= CREATE =================
-  // async createProduct(productDto: ProductDto) {
-  //   const {slug}=productDto
-  //   const adminJwt = this.request.admin;
-  //   if (!adminJwt) {
-  //     throw new NotFoundException(NotFoundMessage.NotFoundUser)
-  //   }
-
-  //       const existProduct = await this.productRepository.findOneBy({ id })
-  //   if (!existProduct) throw new NotFoundException(NotFoundMessage.NotFound)
-
-
-  //   const imageInput = productDto.image || [];
-  //   let images: { url: string; publicId: string }[] = [];
-
-  //   if (Array.isArray(imageInput)) {
-  //     images = imageInput
-  //       .filter(img => img && img.url && img.publicId)
-  //       .slice(0, 5);
-  //   }
-
-  //   const user = await this.adminRepository.findOne({ where: { id: adminJwt.id } });
-  //   if (!user) {
-  //     throw new NotFoundException('User not found in database');
-  //   }
-
-  //   if (slug) {
-  //     const isExist = await this.checkProductBySlug(slug)
-  //     if (isExist && isExist.id !== id) {
-  //       slug = slug + "-" + RandomId()
-  //     }
-  //     existProduct.slug = slug;
-  //   }
-
-  //   const product = this.productRepository.create({
-  //     ...productDto,
-  //     image: images,
-  //     createdBy: user,
-  //     slug: productDto.slug,
-  //     active_discount: toBoolean(productDto.active_discount),
-  //   });
-
-  //   const saved = await this.productRepository.save(product)
-
-
-  //   await this.auditService.log(saved.id, 'CREATE', user?.id ?? null, { before: null, after: saved }, 'created product')
-  //   return {
-  //     message: 'محصول با موفقیت ساخته شد',
-  //     product: saved,
-  //   };
-  // }
-
 
 
 

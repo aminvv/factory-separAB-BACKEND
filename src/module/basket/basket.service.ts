@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, Scope, UnauthorizedException } from '@nestjs/common';
 import { BasketDto, } from './dto/create-basket.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BasketEntity } from './entities/basket.entity';
@@ -13,7 +13,7 @@ import { BasketDiscount } from './types/BasketDiscount.type';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class BasketService {
 
 
@@ -208,6 +208,7 @@ export class BasketService {
         active_discount: product.active_discount,
         discount: product.discount,
         price,
+        quantity,
       });
     }
 

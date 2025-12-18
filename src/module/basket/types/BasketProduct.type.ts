@@ -5,4 +5,5 @@ export type BasketProduct ={
   active_discount: boolean;
   discount: number;
   price: number;
+  quantity: number;
 }

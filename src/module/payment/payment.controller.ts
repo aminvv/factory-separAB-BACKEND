@@ -1,34 +1,33 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Res } from '@nestjs/common';
 import { PaymentService } from './payment.service';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { ApiConsumes, ApiProperty } from '@nestjs/swagger';
+import { Response } from 'express';
+import { swaggerConsumes } from 'src/common/enums/swagger-consumes.enum';
+export class addressDto {
+  @ApiProperty()
+  address: string
+}
 
 @Controller('payment')
 export class PaymentController {
-  constructor(private readonly paymentService: PaymentService) {}
+  constructor(private readonly paymentService: PaymentService) { }
 
   @Post()
-  create(@Body() createPaymentDto: CreatePaymentDto) {
-    return this.paymentService.create(createPaymentDto);
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
+  create(@Body() addressDto: addressDto) {
+    return this.paymentService.create(addressDto.address);
+  }
+  @Get("/verify")
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
+  async verify(@Query("authority") authority: string, @Query("status") status: string, @Res() res: Response) {
+    const url = await this.paymentService.verify(authority, status);
+    return res.redirect(url)
+  }
+  @Get("/find-payment")
+  async find() {
+    return this.paymentService.find();
+
   }
 
-  @Get()
-  findAll() {
-    return this.paymentService.findAll();
-  }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.paymentService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
-    return this.paymentService.update(+id, updatePaymentDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.paymentService.remove(+id);
-  }
 }

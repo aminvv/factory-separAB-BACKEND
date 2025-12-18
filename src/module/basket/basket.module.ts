@@ -14,5 +14,6 @@ import { AuthModule } from '../auth/auth.module';
   imports:[ProductModule,AuthModule,TypeOrmModule.forFeature([DiscountEntity,BasketEntity,])],
   controllers: [BasketController],
   providers: [BasketService,DiscountService],
+  exports:[BasketService,TypeOrmModule]
 })
 export class BasketModule {}

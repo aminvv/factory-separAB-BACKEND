@@ -14,7 +14,7 @@ export class OrderItemEntity extends BaseEntityCustom {
     @Column({ type: "enum", enum: OrderStatus, default: OrderStatus.Pending })
     status:string
     @Column()
-    productId: string
+    productId: number
     @Column({ nullable: true })
     quantity: number
 
