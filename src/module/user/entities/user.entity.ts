@@ -4,6 +4,8 @@ import { Column, CreateDateColumn, Entity, OneToMany, } from "typeorm"
 import { Roles } from "src/common/enums/roles.enum"
 import { CommentsEntity } from "src/module/blog/entities/comment.entity"
 import { BasketEntity } from "src/module/basket/entities/basket.entity"
+import { OrderEntity } from "src/module/order/entities/order.entity"
+import { PaymentEntity } from "src/module/payment/entities/payment.entity"
 
 
 
@@ -28,6 +30,12 @@ export class UserEntity extends BaseEntityCustom {
 
     @OneToMany(() => CommentsEntity, comment => comment.user, { cascade: true })
     blog_comments: CommentsEntity[]
+
+    @OneToMany(() => OrderEntity, order=> order.user, { cascade: true })
+    orders: OrderEntity[]
+
+    @OneToMany(() => PaymentEntity, payment=> payment.user, { cascade: true })
+    payments: PaymentEntity[]
 
     @OneToMany(() => BasketEntity, (basket) => basket.user)
     baskets: BasketEntity[];

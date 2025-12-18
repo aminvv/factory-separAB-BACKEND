@@ -9,7 +9,8 @@ import { OrderStatus } from '../order/enum/order.enum';
 import * as shortid from 'shortid';
 import { OrderItemEntity } from '../order/entities/order-items.entity';
 import { REQUEST } from '@nestjs/core';
-import { request, Request } from 'express';
+import {  Request } from 'express';
+import { NotFoundMessage } from 'src/common/enums/message.enum';
 
 @Injectable({ scope: Scope.REQUEST })
 export class PaymentService {
@@ -17,7 +18,7 @@ export class PaymentService {
     @InjectRepository(PaymentEntity) private paymentRepository: Repository<PaymentEntity>,
     @InjectRepository(OrderEntity) private orderRepository: Repository<OrderEntity>,
     @InjectRepository(OrderItemEntity) private orderItemRepository: Repository<OrderItemEntity>,
-    @Inject(REQUEST)private request:Request,
+    @Inject(REQUEST) private request: Request,
     private basketService: BasketService,
     private zarinnpalService: ZarinnpalService,
   ) { }
@@ -26,12 +27,16 @@ export class PaymentService {
 
 
 
-    // ================= CREATE  =======================
+  // ================= CREATE  =======================
 
   async create(address: string) {
-    const user = request.user
+    const user = this.request.user
+    if (!user) {
+      throw new BadRequestException(NotFoundMessage.NotFoundUser)
+    }
     const basket = await this.basketService.getBasket();
     let order = this.orderRepository.create({
+      user: user,
       final_amount: basket.finalAmount,
       total_amount: basket.totalPrice,
       discount_amount: basket.totalDiscountAmount,
@@ -53,14 +58,14 @@ export class PaymentService {
       user,
     });
     let payment = this.paymentRepository.create({
+      user: user,
       amount: basket.finalAmount,
       authority,
-      orderId: order.id,
       invoice_number: shortid.generate(),
       status: false,
     });
     payment = await this.paymentRepository.save(payment);
-    order.paymentId = payment.id;
+    order.payment = payment;
     await this.orderRepository.save(order);
     return { gateWayUrl };
   }
@@ -73,11 +78,14 @@ export class PaymentService {
 
   // ================= VERIFY  =======================
   async verify(authority: string, status: string) {
-    const payment = await this.paymentRepository.findOneBy({ authority })
+    const payment = await this.paymentRepository.findOne({where:{ authority },relations:['order']})
     if (!payment) throw new NotFoundException("not found payment")
     if (payment.status) throw new BadRequestException("already verified payment")
+
+
+
     if (status === "OK") {
-      const order = await this.orderRepository.findOneBy({ id: payment.id })
+      const order = await this.orderRepository.findOneBy({ id: payment.order.id })
       if (!order) throw new NotFoundException("orderNotFound")
       order.status = OrderStatus.Ordered
       payment.status = true
@@ -85,16 +93,23 @@ export class PaymentService {
         this.paymentRepository.save(payment),
         this.orderRepository.save(order)
       ])
-      return "http://frontEndUrl/payment/success? order_no="+ order.id
+      return "http://frontEndUrl/payment/success? order_no=" + order.id
     } else {
       return "http://frontEndUrl/payment/failedUrl"
     }
   }
 
-  async find(){
+
+
+
+
+
+
+
+  async find() {
     return this.paymentRepository.find({
-      order:{
-        create_at:"DESC"
+      order: {
+        create_at: "DESC"
       }
     })
   }
