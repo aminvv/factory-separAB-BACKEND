@@ -18,7 +18,7 @@ namespace NodeJS {
         REFRESH_TOKEN_SECRET: string
         REFRESH_EXPIRES_IN: string
         OTP_TOKEN_SECRET: string
-        OTP_EXPIRES_IN: string
+        OTP_EXPIRES_IN: string 
 
 
 
