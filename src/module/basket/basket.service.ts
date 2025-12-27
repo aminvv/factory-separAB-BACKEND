@@ -68,62 +68,55 @@ export class BasketService {
 
 
   //================== ADD DISCOUNT TO BASKET ==============================
+async addDiscountToBasket(addDiscountBasket: AddDiscountToBasketDto) {
+  const userId = this.request.user?.id
+  if (!userId) {
+    throw new UnauthorizedException("User not authenticated");
+  }
+  const { code } = addDiscountBasket
+  const discount = await this.discountService.getDiscountByCode(code)
+  if (!discount) throw new NotFoundException("notFound discount")
 
-  async addDiscountToBasket(addDiscountBasket: AddDiscountToBasketDto) {
-    const userId = this.request.user?.id
-    if (!userId) {
-      throw new UnauthorizedException("User not authenticated");
-    }
-    const { code } = addDiscountBasket
-    const discount = await this.discountService.getDiscountByCode(code)
-    if (!discount) throw new NotFoundException("notFound discount")
-    if (discount.type === DiscountType.product && discount.productId) {
-      const basketItem = await this.basketRepository.findOneBy({ productId: discount.productId, userId })
+let productIdForInsert: number | null = null
 
-      if (!basketItem) {
-        throw new BadRequestException("not found item for this discount code")
-      }
-    }
-    if (discount.limit && (discount.limit <= 0 || discount.usage >= discount.limit)) {
-      throw new BadRequestException("discount is limited")
-    }
-    if (discount.expires_in && discount.expires_in <= new Date()) {
-      throw new BadRequestException("discount is expired")
-    }
-
-    const existDiscount = await this.basketRepository.findOneBy({ discountId: discount.id, userId })
-    if (existDiscount) {
-      throw new BadRequestException("already exist discount in basket ")
-    }
-    if (discount.type == DiscountType.Basket) {
-      const item = await this.basketRepository.findOne({
-        relations: {
-          discount: true
-        },
-        where: {
-          discount: { type: DiscountType.Basket }
-        }
-      })
-      if (item) {
-        throw new BadRequestException('you already used basket discount  ')
-      }
-    }
-    const basketItem = await this.basketRepository.findOneBy({
-      productId: discount?.productId, userId
-    });
-
-    await this.basketRepository.insert({
-      userId,
-      productId: discount?.productId,
-      discountId: discount.id,
-      quantity: 0
-    })
-
-
-    return {
-      message: "discount added"
+  if (discount.type === DiscountType.product && discount.productId) {
+    productIdForInsert = discount.productId
+    const basketItem = await this.basketRepository.findOneBy({ productId: discount.productId, userId })
+    if (!basketItem) {
+      throw new BadRequestException("not found item for this discount code")
     }
   }
+
+  if (discount.limit && (discount.limit <= 0 || discount.usage >= discount.limit)) {
+    throw new BadRequestException("discount is limited")
+  }
+  if (discount.expires_in && discount.expires_in <= new Date()) {
+    throw new BadRequestException("discount is expired")
+  }
+
+  const existDiscount = await this.basketRepository.findOneBy({ discountId: discount.id, userId })
+  if (existDiscount) {
+    throw new BadRequestException("already exist discount in basket ")
+  }
+  if (discount.type == DiscountType.Basket) {
+    const item = await this.basketRepository.findOne({
+      relations: { discount: true },
+      where: { discount: { type: DiscountType.Basket } }
+    })
+    if (item) {
+      throw new BadRequestException('you already used basket discount  ')
+    }
+  }
+
+  await this.basketRepository.insert({
+    userId,
+    productId: productIdForInsert,
+    discountId: discount.id,
+    quantity: 0
+  })
+
+  return { message: "discount added" }
+}
 
 
 

@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional, PartialType } from "@nestjs/swagger"
 import { DiscountType } from "../enum/type.enum"
 
 export class CreateDiscountDto {
-    @ApiProperty()
+    @ApiPropertyOptional()
     code: string
     @ApiPropertyOptional()
     percent: number

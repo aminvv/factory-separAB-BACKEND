@@ -11,7 +11,7 @@ import { Column, Entity, ManyToOne } from "typeorm";
 export class BasketEntity extends BaseEntityCustom {
 
     @Column({ nullable: true })
-    productId: number;
+    productId: number | null;
 
     @Column({ nullable: true })
     discountId: number;
