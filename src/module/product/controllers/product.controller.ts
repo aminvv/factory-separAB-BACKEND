@@ -75,7 +75,26 @@ export class ProductController {
   }
 
 
-
+// @Delete('delete-product/:id')
+// async remove(@Param('id') id: number) {
+//   try {
+//     console.log('=== START DELETE PRODUCT ===');
+//     console.log('Product ID:', id);
+    
+//     const result = await this.productService.remove(id);
+    
+//     console.log('=== DELETE SUCCESS ===');
+//     return result;
+    
+//   } catch (error) {
+//     console.error('=== DELETE ERROR ===');
+//     console.error('Error:', error);
+//     console.error('Error message:', error.message);
+//     console.error('Error stack:', error.stack);
+    
+//     throw error;
+//   }
+// }
 
 
 } 

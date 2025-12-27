@@ -6,9 +6,10 @@ import { OrderEntity } from './entities/order.entity';
 import { OrderItemEntity } from './entities/order-items.entity';
 import { ProductModule } from '../product/product.module';
 import { DiscountModule } from '../discount/discount.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([OrderEntity,OrderItemEntity]),ProductModule,DiscountModule],
+  imports:[TypeOrmModule.forFeature([OrderEntity,OrderItemEntity]),ProductModule,DiscountModule,AuthModule],
   controllers: [OrderController],
   providers: [OrderService],
   exports:[OrderService,TypeOrmModule]

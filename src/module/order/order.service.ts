@@ -6,91 +6,99 @@ import { OrderStatus } from './enum/order.enum';
 
 @Injectable()
 export class OrderService {
-  constructor(@InjectRepository(OrderEntity) private orderRepository: Repository<OrderEntity>) { }
+  constructor(
+    @InjectRepository(OrderEntity)
+    private orderRepository: Repository<OrderEntity>,
+  ) {}
 
+// ===============  GET ALL FOR ADMIN =========================
+getAllForAdmin() {
+  return this.orderRepository.find({
+    relations: {
+      user: true,
+      payment: true,
+    },
+    order: {
+      create_at: 'DESC',
+    },
+  });
+}
 
-
-  getAllOrdered() {
-    return this.orderRepository.find({
-      where: {
-        status: OrderStatus.Ordered
-      }
-    })
-  }
-
-
+// ===============  FIND BY ID ORDER =========================
   async findById(orderId: number) {
-    const order = await this.orderRepository.findOneBy({ id: orderId })
-    if (!order) throw new NotFoundException("order not found")
-    return order
-  }
-
-  async setInProcess(orderId: number) {
-    const order = await this.findById(orderId)
-    if(order.status!== OrderStatus.Ordered){
-      throw new BadRequestException("order  not  in paid queue ")
-    }
-    order.status=OrderStatus.InProcess
-    await this.orderRepository.save(order)
-    return{
-      message :"changes status successfully"
-    }
-  }
-
-
-  async setPacked(orderId: number) {
-    const order = await this.findById(orderId)
-    if(order.status!== OrderStatus.InProcess){
-      throw new BadRequestException("order  not  in process queue ")
-    }
-    order.status=OrderStatus.Packed
-    await this.orderRepository.save(order)
-    return{
-      message :"changes status successfully"
-    }
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: {
+        user: true,
+        payment: true,
+        orderItems: {
+          product: true,
+        },
+      },
+    });
+    if (!order) throw new NotFoundException("order not found");
+    return order;
   }
 
 
 
-  async setToTransit(orderId: number) {
-    const order = await this.findById(orderId)
-    if(order.status!== OrderStatus. Packed){
-      throw new BadRequestException("order  not  packed ")
+
+// ===============   ADVANCE STATUS =========================
+  async advanceStatus(orderId: number) {
+    const order = await this.findById(orderId);
+
+    const nextStatusFlow = {
+      [OrderStatus.Ordered]: OrderStatus.InProcess,
+      [OrderStatus.InProcess]: OrderStatus.Packed,
+      [OrderStatus.Packed]: OrderStatus.InTransit,
+      [OrderStatus.InTransit]: OrderStatus.Delivered,
+    };
+
+    const nextStatus = nextStatusFlow[order.status];
+    if (!nextStatus) {
+      throw new BadRequestException("cannot advance from current status");
     }
-    order.status=OrderStatus.InTransit
-    await this.orderRepository.save(order)
-    return{
-      message :"changes status successfully"
-    }
+
+    order.status = nextStatus;
+    await this.orderRepository.save(order);
+    return { message: "status advanced", status: nextStatus };
   }
 
 
 
-  async delivery(orderId: number) {
-    const order = await this.findById(orderId)
-    if(order.status!== OrderStatus.InTransit){
-      throw new BadRequestException("order  not  in transit ")
-    }
-    order.status=OrderStatus.Delivered
-    await this.orderRepository.save(order)
-    return{
-      message :"changes status successfully"
-    }
-  }
-  
 
-  async cancel(orderId: number ) {
-    const order = await this.findById(orderId)
-    if(order.status === OrderStatus.Canceled || order.status === OrderStatus.Pending){
-      throw new BadRequestException("your cant canceled this order")
+  // ===============  REVERT STATUS =========================
+  async revertStatus(orderId: number) {
+    const order = await this.findById(orderId);
+
+    const prevStatusFlow = {
+      [OrderStatus.InProcess]: OrderStatus.Ordered,
+      [OrderStatus.Packed]: OrderStatus.InProcess,
+      [OrderStatus.InTransit]: OrderStatus.Packed,
+      [OrderStatus.Delivered]: OrderStatus.InTransit,
+    };
+
+    const prevStatus = prevStatusFlow[order.status];
+    if (!prevStatus) {
+      throw new BadRequestException("cannot revert from current status");
     }
-    order.status=OrderStatus.Canceled
-    await this.orderRepository.save(order)
-    return{
-      message :"cancel successfully"
-    }
+
+    order.status = prevStatus;
+    await this.orderRepository.save(order);
+    return { message: "status reverted", status: prevStatus };
   }
 
 
 
+// ===============  CANCEL ORDER =========================
+  async cancel(orderId: number) {
+    const order = await this.findById(orderId);
+    if (order.status === OrderStatus.Canceled || order.status === OrderStatus.Pending) {
+      throw new BadRequestException("cannot cancel this order");
+    }
+
+    order.status = OrderStatus.Canceled;
+    await this.orderRepository.save(order);
+    return { message: "order canceled successfully" };
+  }
 }

@@ -61,6 +61,8 @@ export class ProductEntity extends BaseEntityCustom {
     @OneToMany(() => BasketEntity, basket => basket.product, { cascade: true, eager: true, })
     baskets: BasketEntity[]
 
-    @OneToMany(() => OrderItemEntity, orderItems => orderItems.product)
+    @OneToMany(() => OrderItemEntity, orderItems => orderItems.product, {cascade: true,onDelete: 'SET NULL'})
     orderItems: OrderItemEntity[]
+
+
 }

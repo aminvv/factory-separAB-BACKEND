@@ -1,54 +1,36 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import { OrderService } from './order.service';
-import { ApiConsumes } from '@nestjs/swagger';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { AdminGuard } from '../auth/guards/adminGuard.guard';
 
-
-@Controller('order')
+@Controller('admin/orders')
+@ApiBearerAuth("Authorization")
+@UseGuards(AdminGuard)
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-
   @Get()
-  getAllOrdered(){
-   return this.orderService.getAllOrdered()
+  getAll() {
+    return this.orderService.getAllForAdmin();
   }
 
-
-
-    @Get("setInProcess/:orderId")  
-     setInProcess(@Param("orderId") orderId: number) {
-      return this.orderService.setInProcess(orderId) 
-    }
-
-
-
-    @Get("setPacked/:orderId")  
-     setPacked(@Param("orderId") orderId: number) {
-      return this.orderService.setPacked(orderId) 
-    }
-  
-  
-    @Get("setToTransit/:orderId")  
-    setToTransit(@Param("orderId") orderId: number) {
-     return this.orderService.setToTransit(orderId) 
-   }
-  
-
-  
-   @Get("delivery/:orderId")  
-   delivery(@Param("orderId") orderId: number) {
-    return this.orderService.delivery(orderId) 
+  @Get(':id')
+  getDetail(@Param('id') id: number) {
+    return this.orderService.findById(+id);
   }
 
+  @Patch(':id/next')
+  advanceStatus(@Param('id') id: number) {
+    return this.orderService.advanceStatus(+id);
+  }
 
-    
-  @Get("cancel/:orderId")  
-  cancel(@Param("orderId") orderId: number) {
-   return this.orderService.cancel(orderId) 
- }
-  
+  @Patch(':id/revert')
+  revertStatus(@Param('id') id: number) {
+    return this.orderService.revertStatus(+id);
+  }
 
-  
-  
-
+  @Patch(':id/cancel')
+  cancel(@Param('id') id: number) {
+    return this.orderService.cancel(+id);
+  }
 }

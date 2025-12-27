@@ -9,7 +9,7 @@ import { OrderStatus } from '../order/enum/order.enum';
 import * as shortid from 'shortid';
 import { OrderItemEntity } from '../order/entities/order-items.entity';
 import { REQUEST } from '@nestjs/core';
-import {  Request } from 'express';
+import { Request } from 'express';
 import { NotFoundMessage } from 'src/common/enums/message.enum';
 
 @Injectable({ scope: Scope.REQUEST })
@@ -41,7 +41,7 @@ export class PaymentService {
       total_amount: basket.totalPrice,
       discount_amount: basket.totalDiscountAmount,
       address,
-      status: OrderStatus.Pending,
+      status: OrderStatus.Ordered,     // status: OrderStatus.Pending, 
     });
     order = await this.orderRepository.save(order);
     let orderItems = basket.products.map((product) => {
@@ -49,25 +49,43 @@ export class PaymentService {
         orderId: order.id,
         productId: product.id,
         quantity: product?.quantity,
+        status: OrderStatus.Ordered,    // delete
       };
     });
     await this.orderItemRepository.insert(orderItems);
-    const { authority, gateWayUrl } = await this.zarinnpalService.sendRequest({
-      amount: basket.finalAmount,
-      description: "خرید محصولات فیزیکی",
-      user,
-    });
+
+
+    // const { authority, gateWayUrl } = await this.zarinnpalService.sendRequest({
+    //   amount: basket.finalAmount,
+    //   description: "خرید محصولات فیزیکی",
+    //   user,
+    // });
+    // let payment = this.paymentRepository.create({
+    //   user: user,
+    //   amount: basket.finalAmount,
+    //   authority,
+    //   invoice_number: shortid.generate(),
+    //   status: false,
+    // });
+    // payment = await this.paymentRepository.save(payment);
+    // order.payment = payment;
+    // await this.orderRepository.save(order);
+    // return { gateWayUrl };
+
+
     let payment = this.paymentRepository.create({
-      user: user,
+      user,
       amount: basket.finalAmount,
-      authority,
-      invoice_number: shortid.generate(),
-      status: false,
+      authority: "test-authority",
+      invoice_number: "test-" + Date.now(),
+      status: true,
     });
     payment = await this.paymentRepository.save(payment);
+
     order.payment = payment;
     await this.orderRepository.save(order);
-    return { gateWayUrl };
+
+    return { order, orderItems, payment };
   }
 
 
@@ -78,7 +96,7 @@ export class PaymentService {
 
   // ================= VERIFY  =======================
   async verify(authority: string, status: string) {
-    const payment = await this.paymentRepository.findOne({where:{ authority },relations:['order']})
+    const payment = await this.paymentRepository.findOne({ where: { authority }, relations: ['order'] })
     if (!payment) throw new NotFoundException("not found payment")
     if (payment.status) throw new BadRequestException("already verified payment")
 
