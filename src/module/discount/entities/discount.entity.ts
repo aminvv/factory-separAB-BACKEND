@@ -1,8 +1,9 @@
-import { Column, Entity, OneToMany } from "typeorm";
+import { Column, Entity, ManyToMany, OneToMany } from "typeorm";
 import { DiscountType } from "../enum/type.enum";
 import { BaseEntityCustom } from "src/common/abstracts/EntityBasecustom";
 import { EntityName } from "src/common/enums/entity.enum";
 import { BasketEntity } from "src/module/basket/entities/basket.entity";
+import { ProductEntity } from "src/module/product/entities/product.entity";
 
 @Entity(EntityName.Discount)
 export class DiscountEntity extends BaseEntityCustom {
@@ -18,12 +19,16 @@ export class DiscountEntity extends BaseEntityCustom {
   usage: number
   @Column({ type: "timestamp", nullable: true })
   expires_in: Date
-  @Column({  type: 'int', nullable: true })
+  @Column({ type: 'int', nullable: true })
   productId: number | null
   @Column({ type: "enum", enum: DiscountType })
   type: string
 
   @OneToMany(() => BasketEntity, (basket) => basket.discount)
   baskets: BasketEntity[];
+
+  @ManyToMany(() => ProductEntity, product => product.discounts)
+  products: ProductEntity[];
+
 }
 

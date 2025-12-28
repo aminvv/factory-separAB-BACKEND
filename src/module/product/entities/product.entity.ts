@@ -1,11 +1,12 @@
 import { BaseEntityCustom } from "src/common/abstracts/EntityBasecustom";
 import { EntityName } from "src/common/enums/entity.enum";
 import { UserEntity } from "src/module/user/entities/user.entity";
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, } from "typeorm";
 import { ProductDetailEntity } from "./product-detail.entity";
 import { AdminEntity } from "src/module/admin/entities/admin.entity";
 import { BasketEntity } from "src/module/basket/entities/basket.entity";
 import { OrderItemEntity } from "src/module/order/entities/order-items.entity";
+import { DiscountEntity } from "src/module/discount/entities/discount.entity";
 
 
 
@@ -61,8 +62,12 @@ export class ProductEntity extends BaseEntityCustom {
     @OneToMany(() => BasketEntity, basket => basket.product, { cascade: true, eager: true, })
     baskets: BasketEntity[]
 
-    @OneToMany(() => OrderItemEntity, orderItems => orderItems.product, {cascade: true,onDelete: 'SET NULL'})
+    @OneToMany(() => OrderItemEntity, orderItems => orderItems.product, { cascade: true, onDelete: 'SET NULL' })
     orderItems: OrderItemEntity[]
+
+    @ManyToMany(() => DiscountEntity, discount => discount.products)
+    @JoinTable()
+    discounts: DiscountEntity[];
 
 
 }
