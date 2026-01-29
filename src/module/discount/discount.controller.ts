@@ -20,11 +20,19 @@ export class DiscountController {
   update(@Param("id") id: number, @Body() updateDiscountDto: UpdateDiscountDto) {
     return this.discountService.update(id, updateDiscountDto)
   }
-  @Get("/get-discount")
+  @Get("/get-discounts")
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   find() {
     return this.discountService.find()
   }
+  @Get("/get-discount/:id")
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
+  findById(@Param("id") id: number) {
+    return this.discountService.findById(id)
+  }
+
+
+
   @Delete("/delete-discount/:id")
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   delete(@Param("id") id: number) {

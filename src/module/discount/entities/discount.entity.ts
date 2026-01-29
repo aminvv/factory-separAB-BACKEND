@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, OneToMany } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany } from "typeorm";
 import { DiscountType } from "../enum/type.enum";
 import { BaseEntityCustom } from "src/common/abstracts/EntityBasecustom";
 import { EntityName } from "src/common/enums/entity.enum";
@@ -27,8 +27,9 @@ export class DiscountEntity extends BaseEntityCustom {
   @OneToMany(() => BasketEntity, (basket) => basket.discount)
   baskets: BasketEntity[];
 
-  @ManyToMany(() => ProductEntity, product => product.discounts)
-  products: ProductEntity[];
+  @ManyToOne(() => ProductEntity, product => product.discounts,{nullable:true,onDelete: "CASCADE"})
+  @JoinColumn({ name: 'productId' }) 
+  products: ProductEntity;
 
 }
 

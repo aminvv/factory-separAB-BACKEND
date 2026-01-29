@@ -18,7 +18,7 @@ export class ProductEntity extends BaseEntityCustom {
     @Column({ nullable: true })
     productName: string;
 
-    @Column('decimal', { precision: 12, scale: 2 })
+    @Column({ type: 'int', default: 0 })
     price: number;
 
     @Column('int', { default: 0 })
@@ -65,9 +65,9 @@ export class ProductEntity extends BaseEntityCustom {
     @OneToMany(() => OrderItemEntity, orderItems => orderItems.product, { cascade: true, onDelete: 'SET NULL' })
     orderItems: OrderItemEntity[]
 
-    @ManyToMany(() => DiscountEntity, discount => discount.products)
-    @JoinTable()
+    @OneToMany(() => DiscountEntity, discount => discount.products, {cascade: true,eager: true,})
     discounts: DiscountEntity[];
+
 
 
 }
