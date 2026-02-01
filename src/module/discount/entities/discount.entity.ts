@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, UpdateDateColumn } from "typeorm";
 import { DiscountType } from "../enum/type.enum";
 import { BaseEntityCustom } from "src/common/abstracts/EntityBasecustom";
 import { EntityName } from "src/common/enums/entity.enum";
@@ -24,11 +24,16 @@ export class DiscountEntity extends BaseEntityCustom {
   @Column({ type: "enum", enum: DiscountType })
   type: string
 
+  @CreateDateColumn()
+  created_at: Date
+  @UpdateDateColumn()
+  updated_at: Date
+
   @OneToMany(() => BasketEntity, (basket) => basket.discount)
   baskets: BasketEntity[];
 
-  @ManyToOne(() => ProductEntity, product => product.discounts,{nullable:true,onDelete: "CASCADE"})
-  @JoinColumn({ name: 'productId' }) 
+  @ManyToOne(() => ProductEntity, product => product.discounts, { nullable: true, onDelete: "CASCADE" })
+  @JoinColumn({ name: 'productId' })
   products: ProductEntity;
 
 }

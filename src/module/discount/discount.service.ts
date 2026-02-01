@@ -27,17 +27,17 @@ export class DiscountService {
       const product = await this.productService.findOne(productId)
       discountObject['type'] = DiscountType.product
       discountObject['productId'] = product.id
-      
+
       // چک تخفیف بدون کد
       if (!code) {
         const existingDiscount = await this.discountRepository.findOne({
           where: {
             type: DiscountType.product,
             productId: product.id,
-            code: IsNull() 
+            code: IsNull()
           }
         });
-        
+
         if (existingDiscount) {
           throw new ConflictException("برای این محصول قبلاً تخفیف بدون کد ثبت شده است");
         }
@@ -101,17 +101,17 @@ export class DiscountService {
       const product = await this.productService.findOne(productId)
       discount.type = DiscountType.product
       discount.productId = product.id
-      
+
       // چک تخفیف بدون کد
       if (!code) {
         const existingDiscount = await this.discountRepository.findOne({
           where: {
             type: DiscountType.product,
             productId: product.id,
-            code: IsNull() 
+            code: IsNull()
           }
         });
-        
+
         if (existingDiscount && existingDiscount.id !== id) {
           throw new ConflictException("برای این محصول قبلاً تخفیف بدون کد ثبت شده است");
         }
@@ -171,6 +171,17 @@ export class DiscountService {
   async find() {
     return await this.discountRepository.find()
   }
+
+
+  // ==================  FIND  DISCOUNTS PRODUCT ============================
+  async findByProduct(productId: number) {
+    return this.discountRepository.find({
+      where: { productId },
+      order: { created_at: 'DESC' }
+    });
+
+  }
+
 
 
 

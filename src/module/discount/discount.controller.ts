@@ -32,6 +32,12 @@ export class DiscountController {
   }
 
 
+  @Get("/get-discounts-by-product/:productId")
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
+  findByProduct(@Param("productId") productId: number) {
+    return this.discountService.findByProduct(productId)
+  }
+
 
   @Delete("/delete-discount/:id")
   @ApiConsumes(swaggerConsumes.UrlEncoded)
