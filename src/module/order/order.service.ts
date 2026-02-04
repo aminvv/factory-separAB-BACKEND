@@ -9,22 +9,22 @@ export class OrderService {
   constructor(
     @InjectRepository(OrderEntity)
     private orderRepository: Repository<OrderEntity>,
-  ) {}
+  ) { }
 
-// ===============  GET ALL FOR ADMIN =========================
-getAllForAdmin() {
-  return this.orderRepository.find({
-    relations: {
-      user: true,
-      payment: true,
-    },
-    order: {
-      create_at: 'DESC',
-    },
-  });
-}
+  // ===============  GET ALL FOR ADMIN =========================
+  getAllForAdmin() {
+    return this.orderRepository.find({
+      relations: {
+        user: true,
+        payment: true,
+      },
+      order: {
+        create_at: 'DESC',
+      },
+    });
+  }
 
-// ===============  FIND BY ID ORDER =========================
+  // ===============  FIND BY ID ORDER =========================
   async findById(orderId: number) {
     const order = await this.orderRepository.findOne({
       where: { id: orderId },
@@ -43,11 +43,12 @@ getAllForAdmin() {
 
 
 
-// ===============   ADVANCE STATUS =========================
+  // ===============   ADVANCE STATUS =========================
   async advanceStatus(orderId: number) {
     const order = await this.findById(orderId);
 
     const nextStatusFlow = {
+      [OrderStatus.Pending]: OrderStatus.Ordered,
       [OrderStatus.Ordered]: OrderStatus.InProcess,
       [OrderStatus.InProcess]: OrderStatus.Packed,
       [OrderStatus.Packed]: OrderStatus.InTransit,
@@ -90,10 +91,10 @@ getAllForAdmin() {
 
 
 
-// ===============  CANCEL ORDER =========================
+  // ===============  CANCEL ORDER =========================
   async cancel(orderId: number) {
     const order = await this.findById(orderId);
-    if (order.status === OrderStatus.Canceled || order.status === OrderStatus.Pending) {
+    if (order.status === OrderStatus.Canceled || order.status === OrderStatus.Delivered ) {
       throw new BadRequestException("cannot cancel this order");
     }
 

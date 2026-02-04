@@ -1,5 +1,5 @@
 
-import { Column,  Entity, ManyToOne } from "typeorm";
+import { Column, Entity, ManyToOne } from "typeorm";
 import { OrderStatus } from "../enum/order.enum";
 import { OrderEntity } from "./order.entity";
 import { ProductEntity } from "src/module/product/entities/product.entity";
@@ -12,11 +12,12 @@ export class OrderItemEntity extends BaseEntityCustom {
     @Column()
     orderId: number
     @Column({ type: "enum", enum: OrderStatus, default: OrderStatus.Pending })
-    status:string
+    status: string
     @Column()
     productId: number
     @Column({ nullable: true })
     quantity: number
+
 
     @ManyToOne(() => OrderEntity, (order) => order.orderItems)
     order: OrderEntity

@@ -7,11 +7,13 @@ import { OrderItemEntity } from './entities/order-items.entity';
 import { ProductModule } from '../product/product.module';
 import { DiscountModule } from '../discount/discount.module';
 import { AuthModule } from '../auth/auth.module';
+import { InvoiceController } from './invoice.controller';
+import { InvoiceService } from './Invoice.service';
 
 @Module({
   imports:[TypeOrmModule.forFeature([OrderEntity,OrderItemEntity]),ProductModule,DiscountModule,AuthModule],
-  controllers: [OrderController],
-  providers: [OrderService],
-  exports:[OrderService,TypeOrmModule]
+  controllers: [OrderController,InvoiceController],
+  providers: [OrderService,InvoiceService],
+  exports:[OrderService,TypeOrmModule,InvoiceService]
 })
 export class OrderModule {}
