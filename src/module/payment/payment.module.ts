@@ -10,9 +10,11 @@ import { OrderModule } from '../order/order.module';
 import { PaymentEntity } from './entities/payment.entity';
 import { AuthModule } from '../auth/auth.module';
 import { UserEntity } from '../user/entities/user.entity';
+import { ProductModule } from '../product/product.module';
+import { DiscountModule } from '../discount/discount.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([BasketEntity,PaymentEntity,UserEntity]),BasketModule,HttpApiModule,OrderModule,AuthModule],
+  imports:[TypeOrmModule.forFeature([BasketEntity,PaymentEntity,UserEntity,]),DiscountModule,ProductModule,BasketModule,HttpApiModule,OrderModule,AuthModule],
   controllers: [PaymentController],
   providers: [PaymentService],
 })

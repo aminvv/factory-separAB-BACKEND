@@ -14,7 +14,7 @@ export class BasketEntity extends BaseEntityCustom {
     productId: number | null;
 
     @Column({ nullable: true })
-    discountId: number;
+    discountId: number | null;
 
     @Column()
     quantity: number;
@@ -28,7 +28,7 @@ export class BasketEntity extends BaseEntityCustom {
 
     @ManyToOne(() => DiscountEntity, (discount) => discount.baskets, { onDelete: "CASCADE", })
     discount: DiscountEntity;
-    
+
     @ManyToOne(() => UserEntity, (user) => user.baskets, { onDelete: "CASCADE" })
     user: UserEntity;
 }

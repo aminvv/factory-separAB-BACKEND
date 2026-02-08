@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { ProductDto } from '../dto/create-product.dto';
 import { UpdateProductDto } from '../dto/update-product.dto';
 import { REQUEST } from '@nestjs/core';
@@ -193,6 +193,48 @@ export class ProductService {
       products,
     };
   }
+
+  
+
+
+
+
+  
+  
+  
+  
+  
+  
+  // =================  DECREASE QUANTITY =================
+async decreaseQuantity(productId: number, quantity: number) {
+  const product = await this.findOne(productId);
+  
+  if (!product) {
+    throw new NotFoundException('محصول یافت نشد');
+  }
+  
+  if (product.quantity < quantity) {
+    throw new BadRequestException('موجودی محصول کافی نیست');
+  }
+  
+  product.quantity = product.quantity - quantity;
+  return this.productRepository.save(product);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

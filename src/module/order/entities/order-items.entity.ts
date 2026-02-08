@@ -11,12 +11,13 @@ import { BaseEntityCustom } from "src/common/abstracts/EntityBasecustom";
 export class OrderItemEntity extends BaseEntityCustom {
     @Column()
     orderId: number
-    @Column({ type: "enum", enum: OrderStatus, default: OrderStatus.Pending })
-    status: string
     @Column()
     productId: number
     @Column({ nullable: true })
     quantity: number
+
+        @Column({ type: "decimal", precision: 12, scale: 2, default: 0 }) // اضافه کن
+    price: number;
 
 
     @ManyToOne(() => OrderEntity, (order) => order.orderItems)

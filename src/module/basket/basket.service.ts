@@ -2,7 +2,7 @@ import { BadRequestException, Inject, Injectable, NotFoundException, Scope, Unau
 import { BasketDto, } from './dto/create-basket.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BasketEntity } from './entities/basket.entity';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { ProductService } from '../product/services/product.service';
 import { DiscountService } from '../discount/discount.service';
 import { AddDiscountToBasketDto } from './dto/create-discount.dto';
@@ -28,28 +28,54 @@ export class BasketService {
   //================== ADD TO BASKET ==============================
   async addToBasket(addToBasket: BasketDto) {
     const userId = this.request.user?.id
-    const { productId } = addToBasket
+    const { productId, quantity } = addToBasket
 
     const product = await this.productService.findOne(productId,);
-    if (product.quantity === 0)
+    if (product.quantity < quantity)
       throw new BadRequestException("product inventory not enough");
 
-    let basketItem = await this.basketRepository.findOneBy({ productId: product.id, userId })
+
+    let basketItem = await this.basketRepository.findOne({
+      where: {
+        productId: product.id,
+        userId,
+        discountId: IsNull()
+      }
+    })
 
     if (basketItem) {
-      basketItem.quantity += 1;
+      basketItem.quantity += quantity;
       if (basketItem.quantity > product.quantity) {
         throw new BadRequestException("product inventory not enough");
       }
+      await this.basketRepository.save(basketItem)
     } else {
-      basketItem = this.basketRepository.create({
-        productId,
-        userId,
-        quantity: 1,
-      });
-    }
 
-    await this.basketRepository.save(basketItem);
+      const discountedItem = await this.basketRepository.findOne({
+        where: {
+          productId: product.id,
+          userId,
+          discountId: Not(IsNull())
+        }
+      })
+
+      if (discountedItem) {
+        discountedItem.quantity += quantity
+
+        if (discountedItem.quantity > product.quantity) {
+          throw new BadRequestException("product inventory not enough")
+        }
+        await this.basketRepository.save(discountedItem)
+      } else {
+        basketItem = this.basketRepository.create({
+          productId,
+          userId,
+          quantity: quantity,
+          discountId: null
+        })
+        await this.basketRepository.save(basketItem)
+      }
+    }
     return {
       message: "product added to basket",
     };
@@ -67,57 +93,108 @@ export class BasketService {
 
 
 
+
+
+
   //================== ADD DISCOUNT TO BASKET ==============================
-async addDiscountToBasket(addDiscountBasket: AddDiscountToBasketDto) {
-  const userId = this.request.user?.id
-  if (!userId) {
-    throw new UnauthorizedException("User not authenticated");
-  }
-  const { code } = addDiscountBasket
-  const discount = await this.discountService.getDiscountByCode(code)
-  if (!discount) throw new NotFoundException("notFound discount")
-
-let productIdForInsert: number | null = null
-
-  if (discount.type === DiscountType.product && discount.productId) {
-    productIdForInsert = discount.productId
-    const basketItem = await this.basketRepository.findOneBy({ productId: discount.productId, userId })
-    if (!basketItem) {
-      throw new BadRequestException("not found item for this discount code")
+  async addDiscountToBasket(addDiscountBasket: AddDiscountToBasketDto) {
+    const userId = this.request.user?.id
+    if (!userId) {
+      throw new UnauthorizedException("User not authenticated")
     }
-  }
+    const { code } = addDiscountBasket
+    const discount = await this.discountService.getDiscountByCode(code)
+    if (!discount) throw new NotFoundException("notFound discount")
 
-  if (discount.limit && (discount.limit <= 0 || discount.usage >= discount.limit)) {
-    throw new BadRequestException("discount is limited")
-  }
-  if (discount.expires_in && discount.expires_in <= new Date()) {
-    throw new BadRequestException("discount is expired")
-  }
 
-  const existDiscount = await this.basketRepository.findOneBy({ discountId: discount.id, userId })
-  if (existDiscount) {
-    throw new BadRequestException("already exist discount in basket ")
-  }
-  if (discount.type == DiscountType.Basket) {
-    const item = await this.basketRepository.findOne({
-      relations: { discount: true },
-      where: { discount: { type: DiscountType.Basket } }
+    if (discount.expires_in && new Date(discount.expires_in) < new Date()) {
+      throw new BadRequestException("تخفیف منقضی شده است")
+    }
+
+    if (discount.limit && discount.usage >= discount.limit) {
+      throw new BadRequestException("تعداد استفاده از این تخفیف به پایان رسیده")
+    }
+
+
+    const existingDiscount = await this.basketRepository.findOne({
+      where: {
+        userId,
+        discountId: discount.id 
+      }
     })
-    if (item) {
-      throw new BadRequestException('you already used basket discount  ')
+
+    if (existingDiscount) {
+      throw new BadRequestException("این کد تخفیف قبلاً به سبد خرید شما اضافه شده است")
     }
+
+
+
+    if (discount.type === DiscountType.product && discount.productId) {
+      const basketItem = await this.basketRepository.findOne({
+        where: {
+          productId: discount.productId,
+          userId,
+          discountId: IsNull()
+        }
+      })
+ 
+      if (!basketItem) {
+        throw new BadRequestException("این تخفیف فقط برای محصول خاصی است که در سبد خرید شما نیست")
+      }
+    }
+
+    if (discount.limit && (discount.limit <= 0 || discount.usage >= discount.limit)) {
+      throw new BadRequestException("discount is limited")
+    }
+    if (discount.expires_in && discount.expires_in <= new Date()) {
+      throw new BadRequestException("discount is expired")
+    }
+
+
+    if (discount.type === DiscountType.product && discount.productId) {
+      const basketItem = await this.basketRepository.findOne({
+        where: {
+          productId: discount.productId,
+          userId,
+          discountId: IsNull()
+        }
+      })
+
+      if (!basketItem) {
+        throw new BadRequestException("not found item for this discount code")
+      }
+
+      basketItem.discountId = discount.id
+      await this.basketRepository.save(basketItem)
+
+      return { message: "discount added to product" }
+    }
+
+    if (discount.type === DiscountType.Basket) {
+      const existingBasketDiscount = await this.basketRepository.findOne({
+        where: {
+          userId,
+          discount: { type: DiscountType.Basket }
+        },
+        relations: ['discount']
+      })
+
+      if (existingBasketDiscount) {
+        throw new BadRequestException('you already used basket discount')
+      }
+
+      await this.basketRepository.insert({
+        userId,
+        productId: null,
+        discountId: discount.id,
+        quantity: 0
+      })
+
+      return { message: "basket discount added" }
+    }
+
+    throw new BadRequestException("invalid discount type")
   }
-
-  await this.basketRepository.insert({
-    userId,
-    productId: productIdForInsert,
-    discountId: discount.id,
-    quantity: 0
-  })
-
-  return { message: "discount added" }
-}
-
 
 
 
@@ -130,11 +207,11 @@ let productIdForInsert: number | null = null
   //================== GET BASKET ==============================
   async getBasket() {
     const userId = this.request.user?.id
-    let products: BasketProduct[] = [];
-    let discounts: BasketDiscount[] = [];
-    let finalAmount = 0;
-    let totalPrice = 0;
-    let totalDiscountAmount = 0;
+    let products: BasketProduct[] = []
+    let discounts: BasketDiscount[] = []
+    let finalAmount = 0
+    let totalPrice = 0
+    let totalDiscountAmount = 0
 
     const items = await this.basketRepository.find({
       where: { userId },
@@ -142,57 +219,49 @@ let productIdForInsert: number | null = null
         product: true,
         discount: true,
       },
-    });
+    })
 
-    const productDiscounts = items.filter(
-      i => i.discountId && i.discount?.type === DiscountType.product
-    );
-
-    const productItems = items.filter(
-      i => i.product && !i.discountId
-    );
+    const productItems = items.filter(i => i.product)
 
     for (const item of productItems) {
-      const { product, quantity } = item;
-      let discountAmount = 0;
-      let price = +product.price;
+      const { product, quantity } = item
+      let discountAmount = 0
+      let price = +product.price
 
-      totalPrice += price * quantity;
+      totalPrice += price * quantity
 
       if (product.active_discount) {
-        const d = this.checkDiscountPercent(price, +product.discount);
-        price = d.newPrice;
-        discountAmount += d.newDiscountAmount;
+        const d = this.checkDiscountPercent(price, +product.discount)
+        price = d.newPrice
+        discountAmount += d.newDiscountAmount
       }
 
-      const productDiscount = productDiscounts.find(
-        d => d.productId === product.id && this.validateDiscount(d.discount)
-      );
+      if (item.discount && this.validateDiscount(item.discount)) {
+        const discount = item.discount
 
-      if (productDiscount) {
-        const discount = productDiscount.discount;
-
-        discounts.push({
-          percent: discount.percent,
-          amount: discount.amount,
-          code: discount.code,
-          type: discount.type as DiscountType,
-          productId: discount.productId,
-        });
+        if (!discounts.some(d => d.code === discount.code)) {
+          discounts.push({
+            percent: discount.percent,
+            amount: discount.amount,
+            code: discount.code,
+            type: discount.type as DiscountType,
+            productId: discount.productId,
+          })
+        }
 
         if (discount.percent) {
-          const d = this.checkDiscountPercent(price, discount.percent);
-          price = d.newPrice;
-          discountAmount += d.newDiscountAmount;
+          const d = this.checkDiscountPercent(price, discount.percent)
+          price = d.newPrice
+          discountAmount += d.newDiscountAmount
         } else if (discount.amount) {
-          const d = this.checkDiscountAmount(price, discount.amount);
-          price = d.newPrice;
-          discountAmount += d.newDiscountAmount;
+          const d = this.checkDiscountAmount(price, discount.amount)
+          price = d.newPrice
+          discountAmount += d.newDiscountAmount
         }
       }
 
-      totalDiscountAmount += discountAmount * quantity;
-      finalAmount += price * quantity;
+      totalDiscountAmount += discountAmount * quantity
+      finalAmount += price * quantity
 
       products.push({
         id: product.id,
@@ -202,16 +271,16 @@ let productIdForInsert: number | null = null
         discount: product.discount,
         price,
         quantity,
-      });
+      })
     }
 
-    const basketDiscountItem = items.find(
+    const basketDiscountItems = items.filter(
       i => i.discount?.type === DiscountType.Basket && this.validateDiscount(i.discount)
-    );
+    )
 
-    if (basketDiscountItem) {
-      const discount = basketDiscountItem.discount;
-      let discountAmount = 0;
+    for (const basketItem of basketDiscountItems) {
+      const discount = basketItem.discount
+      let discountAmount = 0
 
       discounts.push({
         percent: discount.percent,
@@ -219,20 +288,24 @@ let productIdForInsert: number | null = null
         code: discount.code,
         type: discount.type as DiscountType,
         productId: discount.productId,
-      });
+      })
 
       if (discount.percent) {
-        const d = this.checkDiscountPercent(finalAmount, discount.percent);
-        finalAmount = d.newPrice;
-        discountAmount = d.newDiscountAmount;
+        const d = this.checkDiscountPercent(finalAmount, discount.percent)
+        finalAmount = d.newPrice
+        discountAmount = d.newDiscountAmount
       } else if (discount.amount) {
-        const d = this.checkDiscountAmount(finalAmount, discount.amount);
-        finalAmount = d.newPrice;
-        discountAmount = d.newDiscountAmount;
+        const d = this.checkDiscountAmount(finalAmount, discount.amount)
+        finalAmount = d.newPrice
+        discountAmount = d.newDiscountAmount
       }
 
-      totalDiscountAmount += discountAmount;
+      totalDiscountAmount += discountAmount
     }
+
+    const productDiscounts = items.filter(
+      i => i.discount && i.discount.type === DiscountType.product
+    )
 
     return {
       totalPrice,
@@ -241,10 +314,8 @@ let productIdForInsert: number | null = null
       products,
       discounts,
       productDiscounts,
-    };
+    }
   }
-
-
 
 
 
@@ -291,7 +362,7 @@ let productIdForInsert: number | null = null
 
 
 
-  //================== REMOVE FORM BASKET ==============================
+  //================== REMOVE DISCOUNT FORM BASKET ==============================
 
   async removeDiscountFromBasket(addDiscountBasket: AddDiscountToBasketDto) {
     const { code } = addDiscountBasket
@@ -360,6 +431,21 @@ let productIdForInsert: number | null = null
       message: "product remove from  basket",
     };
   }
+
+
+
+
+
+  //================== CLEAR BASKET FOR USER ==============================
+  async clearBasketForUser(userId: number) {
+    await this.basketRepository.delete({ userId });
+
+    return {
+      message: "basket deleted success"
+    };
+  }
+
+
 
 
 

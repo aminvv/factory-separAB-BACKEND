@@ -174,4 +174,84 @@ if (order.orderItems && Array.isArray(order.orderItems)) {
   private formatPrice(price: number): string {
     return new Intl.NumberFormat('fa-IR').format(price) + ' تومان';
   }
+
+
+  async generateOrderExcel(orderId: number): Promise<Buffer> {
+    const order = await this.orderService.findById(orderId);
+    
+    // ساخت اطلاعات برای Excel
+    const orderData = {
+      orderId: order.id,
+      orderNumber: `ORD-${order.id}`,
+      date: order.create_at,
+      status: order.status,
+      customerName: `${order.user?.firstName || ''} ${order.user?.lastName || ''}`.trim(),
+      customerMobile: order.user?.mobile || '',
+      address: order.address,
+      totalAmount: order.total_amount || 0,
+      discountAmount: order.discount_amount || 0,
+      finalAmount: order.final_amount || 0,
+      itemsCount: this.getOrderItemsCount(order)
+    };
+
+    // ساخت CSV ساده
+    const csvData = Object.entries(orderData)
+      .map(([key, value]) => `${key},${value}`)
+      .join('\n');
+    
+    return Buffer.from(csvData);
+  }
+
+
+    private getOrderItems(order: any): Array<{
+    name: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+  }> {
+    const items = [] as Array<{
+      name: string;
+      quantity: number;
+      unitPrice: number;
+      total: number;
+    }>;
+
+    if (order.orderItems) {
+      if (Array.isArray(order.orderItems)) {
+        for (let i = 0; i < order.orderItems.length; i++) {
+          const item = order.orderItems[i];
+          items.push({
+            name: item.product?.name || 'محصول',
+            quantity: item.quantity || 0,
+            unitPrice: item.product?.price || 0,
+            total: (item.product?.price || 0) * (item.quantity || 0)
+          });
+        }
+      } else if (typeof order.orderItems === 'object') {
+        // اگر تک آبجکت باشد
+        const item = order.orderItems;
+        items.push({
+          name: item.product?.name || 'محصول',
+          quantity: item.quantity || 0,
+          unitPrice: item.product?.price || 0,
+          total: (item.product?.price || 0) * (item.quantity || 0)
+        });
+      }
+    }
+
+    return items;
+  }
+
+  private getOrderItemsCount(order: any): number {
+    if (!order.orderItems) return 0;
+    
+    if (Array.isArray(order.orderItems)) {
+      return order.orderItems.length;
+    } else if (typeof order.orderItems === 'object') {
+      return 1;
+    }
+    
+    return 0;
+  }
+  
 }

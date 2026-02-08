@@ -28,7 +28,6 @@ export class DiscountService {
       discountObject['type'] = DiscountType.product
       discountObject['productId'] = product.id
 
-      // چک تخفیف بدون کد
       if (!code) {
         const existingDiscount = await this.discountRepository.findOne({
           where: {
@@ -102,7 +101,6 @@ export class DiscountService {
       discount.type = DiscountType.product
       discount.productId = product.id
 
-      // چک تخفیف بدون کد
       if (!code) {
         const existingDiscount = await this.discountRepository.findOne({
           where: {
@@ -203,6 +201,24 @@ export class DiscountService {
     return {
       message: "تخفیف با موفقیت حذف شد"
     }
+  }
+
+
+
+
+
+  //================== INCREASE DISCOUNT USAGE ==============================
+  async increaseDiscountUsage(discountId: number) {
+    const discount = await this.discountRepository.findOneBy({ id: discountId });
+
+    if (!discount) {
+      return;
+    }
+    discount.usage = (discount.usage || 0) + 1;
+
+    await this.discountRepository.save(discount);
+
+    return discount;
   }
 
 

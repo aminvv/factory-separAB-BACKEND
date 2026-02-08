@@ -35,4 +35,23 @@ export class InvoiceController {
       res.status(400).json({ message: error.message });
     }
   }
+
+
+
+
+  @Get(':orderId/export/excel')
+  @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  @Header('Content-Disposition', 'attachment; filename="order-details.xlsx"')
+  async exportOrderExcel(
+    @Param('orderId') orderId: number,
+    @Res() res: Response
+  ) {
+    try {
+      const excelBuffer = await this.invoiceService.generateOrderExcel(orderId);
+      res.send(excelBuffer);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+
 }
