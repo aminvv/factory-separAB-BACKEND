@@ -2,7 +2,7 @@ import { BadRequestException, Inject, Injectable, NotFoundException, Scope, Unau
 import { BasketDto, } from './dto/create-basket.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BasketEntity } from './entities/basket.entity';
-import { IsNull, Not, Repository } from 'typeorm';
+import { IsNull, MoreThan, Not, Repository } from 'typeorm';
 import { ProductService } from '../product/services/product.service';
 import { DiscountService } from '../discount/discount.service';
 import { AddDiscountToBasketDto } from './dto/create-discount.dto';
@@ -102,6 +102,18 @@ export class BasketService {
     if (!userId) {
       throw new UnauthorizedException("User not authenticated")
     }
+
+    const basketItemsCount = await this.basketRepository.count({
+      where: {
+        userId,
+        productId: Not(IsNull()),
+        quantity: MoreThan(0)
+      }
+    })
+
+    if (basketItemsCount === 0) {
+      throw new BadRequestException("سبد خرید شما خالی است. ابتدا محصولی اضافه کنید")
+    }
     const { code } = addDiscountBasket
     const discount = await this.discountService.getDiscountByCode(code)
     if (!discount) throw new NotFoundException("notFound discount")
@@ -115,17 +127,22 @@ export class BasketService {
       throw new BadRequestException("تعداد استفاده از این تخفیف به پایان رسیده")
     }
 
+    if (discount.usedByUsers && discount.usedByUsers.includes(userId.toString())) {
+      throw new BadRequestException("شما قبلاً از این کد تخفیف استفاده کرده‌اید")
+    }
 
     const existingDiscount = await this.basketRepository.findOne({
       where: {
         userId,
-        discountId: discount.id 
+        discountId: discount.id
       }
     })
 
     if (existingDiscount) {
       throw new BadRequestException("این کد تخفیف قبلاً به سبد خرید شما اضافه شده است")
     }
+
+
 
 
 
@@ -137,7 +154,7 @@ export class BasketService {
           discountId: IsNull()
         }
       })
- 
+
       if (!basketItem) {
         throw new BadRequestException("این تخفیف فقط برای محصول خاصی است که در سبد خرید شما نیست")
       }

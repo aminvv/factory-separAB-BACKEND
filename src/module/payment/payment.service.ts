@@ -14,6 +14,7 @@ import { NotFoundMessage } from 'src/common/enums/message.enum';
 import { ProductService } from '../product/services/product.service';
 import { DiscountService } from '../discount/discount.service';
 import { BasketEntity } from '../basket/entities/basket.entity';
+import { DiscountEntity } from '../discount/entities/discount.entity';
 
 @Injectable({ scope: Scope.REQUEST })
 export class PaymentService {
@@ -22,6 +23,7 @@ export class PaymentService {
     @InjectRepository(OrderEntity) private orderRepository: Repository<OrderEntity>,
     @InjectRepository(OrderItemEntity) private orderItemRepository: Repository<OrderItemEntity>,
     @InjectRepository(BasketEntity) private basketRepository: Repository<BasketEntity>,
+    @InjectRepository(DiscountEntity) private discountRepository: Repository<DiscountEntity>,
     @Inject(REQUEST) private request: Request,
     private basketService: BasketService,
     private productService: ProductService,
@@ -135,7 +137,6 @@ export class PaymentService {
       for (const item of orderItems) {
         await this.productService.decreaseQuantity(item.productId, item.quantity);
       }
-
       for (const item of basketItems) {
         if (item.discountId) {
           try {
@@ -143,12 +144,26 @@ export class PaymentService {
           } catch (error) {
             console.warn(`تخفیف ${item.discountId} قابل افزایش نبود:`, error.message);
           }
+
+          const discount = await this.discountRepository.findOneBy({ id: item.discountId });
+          if (discount) {
+            const usedByUsers = discount.usedByUsers || [];
+            if (!usedByUsers.includes(userId.toString())) {
+              usedByUsers.push(userId.toString());
+              discount.usedByUsers = usedByUsers;
+              await this.discountRepository.save(discount);
+            }
+          }
         }
       }
 
       if (payment.order?.user?.id) {
         await this.clearUserBasket(payment.order.user.id);
       }
+
+
+
+
 
       await this.paymentRepository.save(payment);
       await this.orderRepository.save(order);

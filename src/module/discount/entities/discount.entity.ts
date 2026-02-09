@@ -23,6 +23,8 @@ export class DiscountEntity extends BaseEntityCustom {
   productId: number | null
   @Column({ type: "enum", enum: DiscountType })
   type: string
+  @Column({ type: 'simple-array', nullable: true })
+  usedByUsers: string[];
 
   @CreateDateColumn()
   created_at: Date
