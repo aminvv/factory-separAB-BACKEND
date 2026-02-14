@@ -187,7 +187,7 @@ if (order.orderItems && Array.isArray(order.orderItems)) {
       status: order.status,
       customerName: `${order.user?.firstName || ''} ${order.user?.lastName || ''}`.trim(),
       customerMobile: order.user?.mobile || '',
-      address: order.address,
+      address: order.shippingAddress,
       totalAmount: order.total_amount || 0,
       discountAmount: order.discount_amount || 0,
       finalAmount: order.final_amount || 0,

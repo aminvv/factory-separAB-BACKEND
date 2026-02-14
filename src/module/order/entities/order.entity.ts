@@ -5,15 +5,13 @@ import { OrderStatus } from "../enum/order.enum";
 import { OrderItemEntity } from "./order-items.entity";
 import { PaymentEntity } from "src/module/payment/entities/payment.entity";
 import { UserEntity } from "src/module/user/entities/user.entity";
+import { AddressEntity } from "src/module/address/entities/address.entity";
 
 
 @Entity(EntityName.Order)
 export class OrderEntity extends BaseEntityCustom {
     @Column({ type: "enum", enum: OrderStatus, default: OrderStatus.Pending })
     status: string
-    @Column()
-    address: string
-
     @Column()
     total_amount: number
     @Column()
@@ -28,6 +26,10 @@ export class OrderEntity extends BaseEntityCustom {
 
     @OneToMany(() => OrderItemEntity, (orderItem) => orderItem.order, { onDelete: "CASCADE" })
     orderItems: OrderItemEntity
+
+@ManyToOne(() => AddressEntity, address => address.orders, { nullable: true })
+@JoinColumn({ name: 'shipping_address_id' })
+shippingAddress: AddressEntity;
 
     @OneToOne(() => PaymentEntity, (payment) => payment.order, { onDelete: "SET NULL" })
     @JoinColumn()

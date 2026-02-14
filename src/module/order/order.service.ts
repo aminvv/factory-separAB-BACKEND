@@ -30,6 +30,7 @@ export class OrderService {
       where: { id: orderId },
       relations: {
         user: true,
+        shippingAddress:true,
         payment: true,
         orderItems: {
           product: true,

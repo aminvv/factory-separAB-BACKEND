@@ -1,34 +1,51 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+} from "@nestjs/common";
+import { ApiConsumes, ApiTags } from "@nestjs/swagger";
+import { UserService } from "./user.service";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
+import { swaggerConsumes } from "src/common/enums/swagger-consumes.enum";
 
-@Controller('user')
+@ApiTags("User")
+@Controller("user")
 export class UserController {
+
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
+  create(@Body() dto: CreateUserDto) {
+    return this.userService.create(dto);
   }
 
   @Get()
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
   findAll() {
     return this.userService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get(":id")
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
+  findOne(@Param("id") id: number) {
     return this.userService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  @Patch(":id")
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
+  update(@Param("id") id: number,@Body() dto: UpdateUserDto,) {
+    return this.userService.update(+id, dto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Delete(":id")
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
+  remove(@Param("id") id: number) {
     return this.userService.remove(+id);
   }
 }

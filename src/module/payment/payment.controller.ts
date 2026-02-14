@@ -4,10 +4,8 @@ import { ApiBearerAuth, ApiConsumes, ApiProperty } from '@nestjs/swagger';
 import { Response } from 'express';
 import { swaggerConsumes } from 'src/common/enums/swagger-consumes.enum';
 import { UserGuard } from '../auth/guards/userGuard.guard';
-export class addressDto {
-  @ApiProperty()
-  address: string
-}
+import { CreatePaymentDto } from './dto/create-payment.dto';
+
 @ApiBearerAuth("Authorization")
 @Controller('payment')
 export class PaymentController {
@@ -17,7 +15,7 @@ export class PaymentController {
   @UseGuards(UserGuard)
   @Post()
   @ApiConsumes(swaggerConsumes.UrlEncoded)
-  create(@Body() addressDto: addressDto) {
+  create(@Body() addressDto: CreatePaymentDto) {
     return this.paymentService.create(addressDto.address);
   }
   @Get("/verify")

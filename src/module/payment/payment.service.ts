@@ -15,6 +15,7 @@ import { ProductService } from '../product/services/product.service';
 import { DiscountService } from '../discount/discount.service';
 import { BasketEntity } from '../basket/entities/basket.entity';
 import { DiscountEntity } from '../discount/entities/discount.entity';
+import { AddressEntity } from '../address/entities/address.entity';
 
 @Injectable({ scope: Scope.REQUEST })
 export class PaymentService {
@@ -24,6 +25,7 @@ export class PaymentService {
     @InjectRepository(OrderItemEntity) private orderItemRepository: Repository<OrderItemEntity>,
     @InjectRepository(BasketEntity) private basketRepository: Repository<BasketEntity>,
     @InjectRepository(DiscountEntity) private discountRepository: Repository<DiscountEntity>,
+    @InjectRepository(AddressEntity) private addressRepository: Repository<AddressEntity>,
     @Inject(REQUEST) private request: Request,
     private basketService: BasketService,
     private productService: ProductService,
@@ -37,23 +39,40 @@ export class PaymentService {
 
   // ================= CREATE  =======================
 
-  async create(address: string) {
-    const user = this.request.user
+  async create(addressId?: number) {
+    const user = this.request.user;
     if (!user) {
-      throw new BadRequestException(NotFoundMessage.NotFoundUser)
+      throw new BadRequestException('کاربر یافت نشد');
     }
+
+    let address: AddressEntity | null = null;
+
+    if (addressId) {
+      address = await this.addressRepository.findOne({
+        where: { id: addressId, user: { id: user.id } }
+      });
+      if (!address) {
+        throw new BadRequestException('آدرس انتخاب شده معتبر نیست');
+      }
+    } else {
+      address = await this.addressRepository.findOne({
+        where: { user: { id: user.id }, isDefault: true }
+      });
+      if (!address) {
+        throw new BadRequestException('لطفاً یک آدرس پیش‌فرض انتخاب کنید');
+      }
+    }
+
+
+
     const basket = await this.basketService.getBasket();
-
-
-
-
 
     const order = await this.orderRepository.save({
       user,
       final_amount: basket.finalAmount,
       total_amount: basket.totalPrice,
       discount_amount: basket.totalDiscountAmount,
-      address,
+      shippingAddress: address,
       status: OrderStatus.Pending,
     });
     await this.orderRepository.save(order);
