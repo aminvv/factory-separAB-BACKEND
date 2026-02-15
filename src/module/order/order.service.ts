@@ -17,6 +17,7 @@ export class OrderService {
       relations: {
         user: true,
         payment: true,
+        shippingAddress:true,
       },
       order: {
         create_at: 'DESC',

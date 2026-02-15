@@ -88,16 +88,25 @@ export class PaymentService {
     await this.orderItemRepository.insert(orderItems);
 
 
+
     const { authority, gateWayUrl } = await this.zarinnpalService.sendRequest({
       amount: basket.finalAmount,
       description: "خرید محصولات فیزیکی",
       user,
     });
+
+    const generateNumericInvoice = (): string => {
+      const timestamp = Date.now().toString().slice(-6);
+      const random = Math.floor(1000 + Math.random() * 9000); 
+      return `${timestamp}${random}`;
+    };
+
+
     let payment = this.paymentRepository.create({
       user: user,
       amount: basket.finalAmount,
       authority,
-      invoice_number: shortid.generate(),
+      invoice_number: generateNumericInvoice(),
       status: false,
     });
     payment = await this.paymentRepository.save(payment);
@@ -107,15 +116,9 @@ export class PaymentService {
 
 
 
-
-
-
-
-
-
-
-
   }
+
+
 
 
 
@@ -196,17 +199,25 @@ export class PaymentService {
 
 
 
-
+  // ================= FIND  =======================
   async find() {
     return this.paymentRepository.find({
+      relations: {
+        order: {
+          orderItems: {
+            product: true
+          }
+        },
+        user: true
+      },
       order: {
-        create_at: "DESC"
+        create_at: 'DESC'
       }
-    })
+    });
   }
 
 
-
+  // =================  CLEAR USER BASKET  =======================
   private async clearUserBasket(userId: number) {
     try {
       await this.basketService.clearBasketForUser(userId);
