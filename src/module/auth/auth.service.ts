@@ -37,6 +37,8 @@ export class AuthService {
     const user = await this.userRepository.findOne({ where: { mobile } })
     if (!user) throw new UnauthorizedException('کاربر با این شماره ثبت نشده است')
 
+    user.last_login = new Date();
+    await this.userRepository.save(user)
     const accessToken = this.tokenService.generateAccessToken({ userId: user.id })
     const refreshToken = this.tokenService.generateRefreshToken({ userId: user.id })
 
@@ -113,10 +115,10 @@ export class AuthService {
 
 
 
-  async validationAccessToken(accessToken:string) {
-    const payload =this.tokenService.verifyToken<{userId:number}>(accessToken,'access')
-    const user=await this.userRepository.findOneBy({id:payload?.userId})
-    if(!user ){
+  async validationAccessToken(accessToken: string) {
+    const payload = this.tokenService.verifyToken<{ userId: number }>(accessToken, 'access')
+    const user = await this.userRepository.findOneBy({ id: payload?.userId })
+    if (!user) {
       throw new UnauthorizedException(AuthMessage.loginAgain)
     }
     return user

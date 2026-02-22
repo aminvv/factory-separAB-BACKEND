@@ -2,7 +2,7 @@ import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/co
 import { InjectRepository } from "@nestjs/typeorm";
 import { AdminEntity } from "../admin/entities/admin.entity";
 import { Repository } from "typeorm";
-import { AuthAdminDto, CreateAdminDto } from "./dto/create-auth.dto";
+import { AuthAdminDto } from "./dto/create-auth.dto";
 import { TokenService } from "./token.service";
 import * as bcrypt from 'bcrypt';
 
@@ -43,31 +43,6 @@ export class AuthAdminService {
     }
 
 
-
-    async createAdminBySuperAdmin(createAdminDto: CreateAdminDto) {
-        const { email, fullName, password, avatar, role } = createAdminDto
-        const existsAdmin = await this.findAdminByEmail(email)
-        if (existsAdmin) {
-            throw new ConflictException('ادمینی با این ایمیل وجود دارد')
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10)
-
-        const admin = this.AdminRepository.create({
-            email,
-            password: hashedPassword,
-            fullName,
-            role,
-            isActive: true,
-            avatar
-        })
-
-        await this.AdminRepository.save(admin)
-
-        return {
-            message: "حساب ادمین جدید ایجاد شد"
-        }
-    }
 
 
 

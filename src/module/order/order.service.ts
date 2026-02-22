@@ -17,7 +17,10 @@ export class OrderService {
       relations: {
         user: true,
         payment: true,
-        shippingAddress:true,
+        shippingAddress: true,
+        orderItems: {  
+          product: true 
+        }
       },
       order: {
         create_at: 'DESC',
@@ -31,7 +34,7 @@ export class OrderService {
       where: { id: orderId },
       relations: {
         user: true,
-        shippingAddress:true,
+        shippingAddress: true,
         payment: true,
         orderItems: {
           product: true,
@@ -96,7 +99,7 @@ export class OrderService {
   // ===============  CANCEL ORDER =========================
   async cancel(orderId: number) {
     const order = await this.findById(orderId);
-    if (order.status === OrderStatus.Canceled || order.status === OrderStatus.Delivered ) {
+    if (order.status === OrderStatus.Canceled || order.status === OrderStatus.Delivered) {
       throw new BadRequestException("cannot cancel this order");
     }
 

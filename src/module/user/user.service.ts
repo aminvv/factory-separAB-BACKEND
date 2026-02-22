@@ -8,6 +8,7 @@ import { Repository } from "typeorm";
 import { UserEntity } from "./entities/user.entity";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { Roles } from "src/common/enums/roles.enum";
 
 @Injectable()
 export class UserService {
@@ -20,7 +21,7 @@ export class UserService {
 
 
 
-// ===================== CREATE ====================================
+  // ===================== CREATE ====================================
   async create(dto: CreateUserDto) {
 
     const exists = await this.userRepository.findOne({
@@ -30,9 +31,11 @@ export class UserService {
     if (exists) {
       throw new ConflictException("Mobile already exists");
     }
+    const user = this.userRepository.create({
+      ...dto,
+      role: Roles.User,
 
-    const user = this.userRepository.create(dto);
-
+    })
     return this.userRepository.save(user);
   }
 
@@ -40,7 +43,7 @@ export class UserService {
 
 
 
-// ===================== FIND ALL ====================================
+  // ===================== FIND ALL ====================================
   async findAll() {
     return this.userRepository.find({
       order: { id: "DESC" },
@@ -98,7 +101,7 @@ export class UserService {
 
     const user = await this.findOne(id);
 
-    await this.userRepository.remove(user);
+    await this.userRepository.softRemove(user);
 
     return { message: "User removed successfully" };
   }

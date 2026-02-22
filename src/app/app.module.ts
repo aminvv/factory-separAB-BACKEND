@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CloudinaryService } from 'src/common/services/cloudinary.service';
 import { TypeOrmConfig } from 'src/config/typeorm.config';
 import { AddressModule } from 'src/module/address/address.module';
+import { AdminModule } from 'src/module/admin/admin.module';
 import { AuthModule } from 'src/module/auth/auth.module';
 import { BasketModule } from 'src/module/basket/basket.module';
 import { BlogModule } from 'src/module/blog/blog.module';
@@ -27,6 +28,7 @@ import { DataSource } from 'typeorm';
     BlogModule,
     OrderModule,
     UserModule,
+    AdminModule,
     AddressModule,
     HttpApiModule
   ],

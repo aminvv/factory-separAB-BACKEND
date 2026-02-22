@@ -18,8 +18,5 @@ export class CreateUserDto {
   @IsString()
   mobile: string;
 
-  @ApiPropertyOptional({ enum: Roles })
-  @IsOptional()
-  @IsEnum(Roles)
-  role?: Roles;
+
 }
