@@ -30,7 +30,7 @@ export class AuthAdminService {
             throw new UnauthorizedException(" ایمیل یا نام کاربری نادرست میباشد")
          }
 
-        
+        if (!admin.isActive) throw new UnauthorizedException('حساب کاربری شما غیرفعال شده است');
 
         const accessToken = this.tokenService.generateAccessToken({ userId: admin.id })
 

@@ -7,28 +7,24 @@ import { ROLE_KEY } from "src/common/decorators/role.decorator";
 
 @Injectable()
 export class RolesGuard implements CanActivate {
+  constructor(private reflector: Reflector) {}
 
-    constructor(private reflector: Reflector) { }
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const requiredRoles = this.reflector.getAllAndOverride<Roles[]>(ROLE_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (!requiredRoles || requiredRoles.length === 0) return true;
 
-    async canActivate(context: ExecutionContext): Promise<boolean> {
-        const requiredRoles = this.reflector.getAllAndOverride<Roles[]>(ROLE_KEY, [
-            context.getHandler(),
-            context.getClass(),
-        ])
-        if (!requiredRoles || requiredRoles.length == 0) return true
+    const request = context.switchToHttp().getRequest();
 
+    const user = request.user || request.admin;
+    const userRole = user?.role as Roles ?? Roles.User;
 
-        const request = context.switchToHttp().getRequest()
-        const user = request.user
-        const userRole = user?.role as Roles ?? Roles.User
-        if (user.role === Roles.Admin) return true
-        if (requiredRoles.includes(userRole)) return true
-        throw new ForbiddenException()
-    
-        
+    if (userRole === Roles.SuperAdmin) return true;
 
-    }
+    if (requiredRoles.includes(userRole)) return true;
 
-
-
+    throw new ForbiddenException();
+  }
 }

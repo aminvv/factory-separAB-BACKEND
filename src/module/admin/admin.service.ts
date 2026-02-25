@@ -1,5 +1,5 @@
-import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
-import { CreateAdminDto } from './dto/create-admin.dto';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, Scope, UnauthorizedException } from '@nestjs/common';
+import { CreateAdminDto, UpdateProfileDto } from './dto/create-admin.dto';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AdminEntity } from './entities/admin.entity';
@@ -9,6 +9,7 @@ import { Request, request } from 'express';
 import { REQUEST } from '@nestjs/core';
 import { UserEntity } from '../user/entities/user.entity';
 import { Roles } from 'src/common/enums/roles.enum';
+import { UpdateAdminDto } from './dto/update-admin.dto';
 @Injectable({ scope: Scope.REQUEST })
 export class AdminService {
 
@@ -17,40 +18,65 @@ export class AdminService {
     @Inject(REQUEST) private request: Request,
     @InjectRepository(AdminEntity) private adminRepository: Repository<AdminEntity>,
     @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
-    private tokenService: TokenService,
   ) { }
 
 
-  async createAdminBySuperAdmin(createAdminDto: CreateAdminDto) {
-    const { email, fullName, password, avatar, } = createAdminDto
-    const existsAdmin = await this.findAdminByEmail(email)
-    if (existsAdmin) {
-      throw new ConflictException('ادمینی با این ایمیل وجود دارد')
-    }
 
-    const hashedPassword = await bcrypt.hash(password, 10)
 
-    const admin = this.adminRepository.create({
-      email,
-      password: hashedPassword,
-      fullName,
-      role: Roles.Admin,
-      isActive: true,
-      avatar
-    })
 
-    await this.adminRepository.save(admin)
 
-    return {
-      message: "حساب ادمین جدید ایجاد شد"
+
+async createAdminBySuperAdmin(createAdminDto: CreateAdminDto) {
+  const { email, fullName, password, avatar, role } = createAdminDto;
+
+  // 1. جستجوی ادمین با این ایمیل (شامل رکوردهای حذف‌شده)
+  const existingAdmin = await this.adminRepository.findOne({
+    where: { email },
+    withDeleted: true
+  });
+
+  if (existingAdmin) {
+    // 2. اگر ادمین قبلاً حذف نرم شده است
+    if (existingAdmin.deleted_at) {
+      // به‌روزرسانی تمام فیلدها
+      existingAdmin.fullName = fullName;
+      existingAdmin.role = role;
+      
+      if (avatar !== undefined) {
+        existingAdmin.avatar = avatar;
+      }
+      
+      existingAdmin.password = await bcrypt.hash(password, 10);
+
+      (existingAdmin as any).deleted_at = null;
+      
+      await this.adminRepository.save(existingAdmin);
+
+      return {
+        message: 'ادمین قبلی با موفقیت بازیابی و به‌روزرسانی شد'
+      };
+    } else {
+      throw new ConflictException('ادمینی با این ایمیل وجود دارد');
     }
   }
 
+  // 4. اگر ایمیلی وجود ندارد، ادمین جدید بساز
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const admin = this.adminRepository.create({
+    email,
+    password: hashedPassword,
+    fullName,
+    role: role || Roles.Admin,
+    isActive: true,
+    avatar
+  });
 
+  await this.adminRepository.save(admin);
 
-
-
-
+  return {
+    message: 'حساب ادمین جدید ایجاد شد'
+  };
+}
   async findAdminByEmail(email: string) {
     const admin = await this.adminRepository.findOneBy({ email })
     return admin
@@ -69,36 +95,6 @@ export class AdminService {
 
 
 
-
-
- async updateAdmin(id: number, dto: Partial<CreateAdminDto>, currentAdminId: number) {
-    const admin = await this.adminRepository.findOneBy({ id });
-    if (!admin) {
-      throw new NotFoundException('ادمین یافت نشد');
-    }
-
-    if (id === currentAdminId && dto.role && dto.role !== 'superAdmin') {
-      throw new ForbiddenException('نمی‌توانید نقش خود را تغییر دهید');
-    }
-
-    if (dto.email && dto.email !== admin.email) {
-      const exists = await this.adminRepository.findOneBy({ email: dto.email });
-      if (exists) {
-        throw new ConflictException('این ایمیل قبلاً استفاده شده است');
-      }
-    }
-
-    if (dto.password) {
-      dto.password = await bcrypt.hash(dto.password, 10);
-    }
-
-    Object.assign(admin, dto);
-    await this.adminRepository.save(admin);
-
-    return {
-      message: 'ادمین با موفقیت به‌روزرسانی شد',
-    };
-  }
 
 
 
@@ -124,10 +120,10 @@ export class AdminService {
     }
 
 
-    const existingAdmin = await this.adminRepository.findOne({
+    const existsAdmin = await this.adminRepository.findOne({
       where: { email: dto.email }
     });
-    if (existingAdmin) {
+    if (existsAdmin) {
       throw new ConflictException('این ایمیل قبلاً برای یک ادمین استفاده شده است');
     }
 
@@ -184,4 +180,76 @@ export class AdminService {
 
 
 
+  async findOneById(id: number): Promise<AdminEntity> {
+    const admin = await this.adminRepository.findOne({ where: { id } });
+    if (!admin) throw new NotFoundException('ادمین یافت نشد');
+    return admin;
+  }
+
+
+
+
+
+
+  async updateRole(id: number, newRole: Roles): Promise<AdminEntity> {
+    const AuthAdmin = this.request.admin?.id;
+
+    const admin = await this.findOneById(id);
+    if (admin.id === AuthAdmin) {
+      throw new ForbiddenException('نمی‌توانید نقش خود را تغییر دهید');
+    }
+    admin.role = newRole;
+    return this.adminRepository.save(admin);
+  }
+
+
+
+  async update(id: number, updateDto: UpdateAdminDto): Promise<AdminEntity> {
+    const admin = await this.findOneById(id);
+
+    const currentAdmin = this.request.admin;
+    if (admin.id === currentAdmin?.id && updateDto.role && updateDto.role !== admin.role) {
+      throw new ForbiddenException('نمی‌توانید نقش خود را تغییر دهید');
+    }
+    if (updateDto.password) {
+      updateDto.password = await bcrypt.hash(updateDto.password, 10);
+    }
+    Object.assign(admin, updateDto);
+    return this.adminRepository.save(admin);
+  }
+
+
+
+
+
+
+
+  async softDelete(id: number): Promise<void> {
+    const AuthAdmin = this.request.admin?.id
+    const admin = await this.findOneById(id);
+    if (admin.id === AuthAdmin) {
+      throw new ForbiddenException('نمی‌توانید خودتان را حذف کنید');
+    }
+    await this.adminRepository.softRemove(admin);
+  }
+
+
+
+
+
+
+
+  async updateProfile(adminId: number, updateDto: UpdateProfileDto): Promise<AdminEntity> {
+    const admin = await this.findOneById(adminId);
+    if (updateDto.password) {
+      // در صورت نیاز می‌توانید رمز فعلی را نیز بررسی کنید
+      updateDto.password = await bcrypt.hash(updateDto.password, 10);
+    }
+    Object.assign(admin, updateDto);
+    return this.adminRepository.save(admin);
+  }
 }
+
+
+
+

@@ -21,20 +21,20 @@ export abstract class BaseAuthGuard implements CanActivate {
             const user = await this.findUser(payload.userId)
             if (!user) throw new UnauthorizedException(AuthMessage.loginAgain);
 
-            request [this.roleKey]=user
-
+            request[this.roleKey] = user
+            request.user = user;
             return true;
 
         } catch (err) {
             throw new UnauthorizedException(AuthMessage.loginAgain);
         }
     }
-
+ 
     protected abstract verifyToken(token: string)
 
 
 
-     protected abstract findUser(userId: number)
+    protected abstract findUser(userId: number)
 
 
 

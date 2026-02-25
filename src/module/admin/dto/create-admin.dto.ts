@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { Roles } from "src/common/enums/roles.enum";
 
 export class CreateAdminDto {
@@ -20,11 +20,39 @@ export class CreateAdminDto {
     @IsOptional()
     avatar?: string;
 
-    @IsString()
-    @IsOptional()
+    @IsEnum(Roles)
+    @IsNotEmpty()
     role: Roles;
 
 
 
 
+}
+
+
+export class UpdateRoleDto {
+    @ApiProperty({ enum: Roles })
+    @IsEnum(Roles)
+    @IsNotEmpty()
+    role: Roles;
+}
+
+
+
+
+export class UpdateProfileDto {
+    @ApiProperty({ required: false })
+    @IsString()
+    @IsOptional()
+    fullName?: string;
+
+    @ApiProperty({ required: false })
+    @IsString()
+    @IsOptional()
+    avatar?: string;
+
+    @ApiProperty({ required: false })
+    @IsString()
+    @IsOptional()
+    password?: string;
 }
