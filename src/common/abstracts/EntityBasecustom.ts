@@ -4,4 +4,4 @@ import { Entity, PrimaryGeneratedColumn } from "typeorm";
 export class BaseEntityCustom{
     @PrimaryGeneratedColumn("increment")
     id:number
-}
+} 

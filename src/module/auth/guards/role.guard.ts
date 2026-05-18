@@ -21,8 +21,9 @@ export class RolesGuard implements CanActivate {
     const user = request.user || request.admin;
     const userRole = user?.role as Roles ?? Roles.User;
 
-    if (userRole === Roles.SuperAdmin) return true;
+       if (userRole === Roles.SuperAdmin) return true;
 
+    // بررسی نقش کاربر در لیست نقش‌های مورد نیاز
     if (requiredRoles.includes(userRole)) return true;
 
     throw new ForbiddenException();

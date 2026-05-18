@@ -72,6 +72,15 @@ export class AdminController {
 
 
 
+  // 4. ویرایش پروفایل شخصی توسط هر ادمین (شامل سوپر ادمین)
+  @Patch('profile')
+  @CanAccess(Roles.Admin,Roles.SuperAdmin) // ادمین معمولی و سوپر ادمین هر دو مجازند
+  @UseGuards(AdminGuard, RolesGuard)
+  async updateProfile(@Req() req, @Body() updateProfileDto: UpdateProfileDto) {
+    const admin = req.user || req.admin; // موجودیت احراز هویت شده
+    return this.adminService.updateProfile(admin.id, updateProfileDto);
+  }
+
 
 
 
@@ -90,7 +99,7 @@ export class AdminController {
   async updateAdmin(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto) {
     return this.adminService.update(+id, updateAdminDto);
   }
-
+  
   // 3. حذف (soft delete) یک ادمین توسط سوپر ادمین
   @Delete(':id')
   @CanAccess(Roles.SuperAdmin)
@@ -98,15 +107,7 @@ export class AdminController {
     await this.adminService.softDelete(+id);
     return { message: 'ادمین با موفقیت حذف شد' };
   }
-
-  // 4. ویرایش پروفایل شخصی توسط هر ادمین (شامل سوپر ادمین)
-  @Patch('profile')
-  @CanAccess(Roles.Admin) // ادمین معمولی و سوپر ادمین هر دو مجازند
-  async updateProfile(@Req() req, @Body() updateProfileDto: UpdateProfileDto) {
-    const admin = req.user || req.admin; // موجودیت احراز هویت شده
-    return this.adminService.updateProfile(admin.id, updateProfileDto);
-  }
-
+  
 
 
 

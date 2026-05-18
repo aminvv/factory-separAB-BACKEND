@@ -10,6 +10,7 @@ import { BasketModule } from 'src/module/basket/basket.module';
 import { BlogModule } from 'src/module/blog/blog.module';
 import { DiscountModule } from 'src/module/discount/discount.module';
 import { HttpApiModule } from 'src/module/http/http.module';
+import { ImageModule } from 'src/module/image/image.module';
 import { OrderModule } from 'src/module/order/order.module';
 import { PaymentModule } from 'src/module/payment/payment.module';
 import { ProductModule } from 'src/module/product/product.module';
@@ -25,6 +26,7 @@ import { DataSource } from 'typeorm';
     DiscountModule,
     BasketModule,
     PaymentModule,
+    ImageModule,
     BlogModule,
     OrderModule,
     UserModule,

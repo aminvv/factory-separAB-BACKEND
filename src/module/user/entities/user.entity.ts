@@ -8,6 +8,7 @@ import { OrderEntity } from "src/module/order/entities/order.entity"
 import { PaymentEntity } from "src/module/payment/entities/payment.entity"
 import { AddressEntity } from "src/module/address/entities/address.entity";
 import { AdminEntity } from "src/module/admin/entities/admin.entity"
+import { ImageEntity } from "src/module/image/entities/image.entity"
 
 
 
@@ -50,7 +51,7 @@ export class UserEntity extends BaseEntityCustom {
 
 
     @OneToOne(() => AdminEntity, (admin) => admin.user)
-
     admin: AdminEntity
+
 
 }

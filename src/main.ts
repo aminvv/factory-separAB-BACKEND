@@ -4,16 +4,19 @@ import { swaggerConfigInit } from './config/swagger.config';
 import * as cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: false,
     forbidNonWhitelisted: true,
     transform: true,
   }));
+
+  app.useStaticAssets("public")
 
 
   app.use(cookieParser());

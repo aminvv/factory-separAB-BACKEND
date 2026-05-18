@@ -239,14 +239,24 @@ async createAdminBySuperAdmin(createAdminDto: CreateAdminDto) {
 
 
 
-  async updateProfile(adminId: number, updateDto: UpdateProfileDto): Promise<AdminEntity> {
-    const admin = await this.findOneById(adminId);
+async updateProfile(adminId: number, updateDto: UpdateProfileDto): Promise<AdminEntity> {
+    // جستجوی مستقیم بدون واسطه
+    const admin = await this.adminRepository.findOne({ where: { id: adminId } });
+    
+    if (!admin) {
+      throw new NotFoundException('حساب کاربری یافت نشد');
+    }
+
     if (updateDto.password) {
-      // در صورت نیاز می‌توانید رمز فعلی را نیز بررسی کنید
       updateDto.password = await bcrypt.hash(updateDto.password, 10);
     }
-    Object.assign(admin, updateDto);
-    return this.adminRepository.save(admin);
+
+    // آپدیت فیلدها
+    if (updateDto.fullName) admin.fullName = updateDto.fullName;
+    if (updateDto.avatar) admin.avatar = updateDto.avatar;
+    if (updateDto.password) admin.password = updateDto.password;
+
+    return await this.adminRepository.save(admin);
   }
 }
 

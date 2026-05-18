@@ -2,6 +2,7 @@ import { BaseEntityCustom } from "src/common/abstracts/EntityBasecustom";
 import { EntityName } from "src/common/enums/entity.enum";
 import { Roles } from "src/common/enums/roles.enum";
 import { CommentsEntity } from "src/module/blog/entities/comment.entity";
+import { ImageEntity } from "src/module/image/entities/image.entity";
 import { ProductEntity } from "src/module/product/entities/product.entity";
 import { UserEntity } from "src/module/user/entities/user.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, OneToOne, UpdateDateColumn } from "typeorm";
@@ -16,7 +17,7 @@ export class AdminEntity extends BaseEntityCustom {
     @Column()
     password: string
 
-    @Column({ type:"enum", enum:Roles, default: Roles.Admin })
+    @Column({ type: "enum", enum: Roles, default: Roles.Admin })
     role: Roles
 
     @Column({ nullable: true })
@@ -46,4 +47,9 @@ export class AdminEntity extends BaseEntityCustom {
 
     @OneToOne(() => UserEntity, (user) => user.admin)
     user: UserEntity
+
+
+    @OneToOne(() => ImageEntity, (image) => image.admin)
+    images: ImageEntity
+
 }
