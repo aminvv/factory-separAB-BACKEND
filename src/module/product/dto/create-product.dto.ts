@@ -1,8 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsArray } from 'class-validator';
+import { IsString, IsOptional,  IsNumber, IsBoolean, IsEnum, Min } from 'class-validator';
+import { SaleType } from '../enums/SaleType.enum';
+
+
 
 export class ProductDto {
-  0
   @ApiProperty()
   productCode: string;
 
@@ -15,9 +17,8 @@ export class ProductDto {
   @ApiProperty()
   quantity: number;
 
-
   @ApiProperty()
-  slug: string
+  slug: string;
 
   @ApiProperty()
   rating: number;
@@ -26,10 +27,10 @@ export class ProductDto {
   status: boolean;
 
   @ApiPropertyOptional()
-  discount: number
+  discount: number;
 
   @ApiPropertyOptional()
-  active_discount: boolean
+  active_discount: boolean;
 
   @ApiPropertyOptional()
   description?: string;
@@ -38,7 +39,41 @@ export class ProductDto {
   @IsOptional()
   image?: { url: string; publicId: string }[];
 
+  // فیلدهای جدید
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lifespan?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+
+  weight?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  thickness?: string;
+
+  @ApiPropertyOptional({ enum: SaleType })
+  @IsOptional()
+  @IsEnum(SaleType)
+  saleType?: SaleType;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  deliveryTime?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  deliveryCost?:string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  returnable?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  insurance?: boolean;
 }
-
-
-
