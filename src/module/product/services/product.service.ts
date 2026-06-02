@@ -294,4 +294,22 @@ async decreaseQuantity(productId: number, quantity: number) {
 
 
 
+
+
+
+
+
+
+
+
+   
+
+      async checkExistProductById(id: number) {
+        const product = await this.productRepository.findOneBy({ id })
+        if (!product) throw new NotFoundException(NotFoundMessage.NotFound)
+        return product
+    }
+  
+
+
 }

@@ -21,11 +21,10 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter());
-  app.enableCors({
-    origin: 'http://localhost:3000',
-    credentials: true
-  });
-  app.enableCors({ origin: 'http://localhost:4200', credentials: true });
+app.enableCors({
+  origin: ['http://localhost:3000', 'http://localhost:4200'],
+  credentials: true,
+});
   swaggerConfigInit(app)
   const { PORT } = process.env
   await app.listen(PORT, () => {

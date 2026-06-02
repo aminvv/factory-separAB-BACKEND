@@ -12,11 +12,14 @@ import { ProductController } from './controllers/product.controller';
 import { ProductAuditService } from './services/product-audit.service';
 import { ProductDetailService } from './services/product-detail.service';
 import { CloudinaryService } from 'src/common/services/cloudinary.service';
+import { CommentsEntity } from './entities/comment.entity';
+import { ProductCommentService } from './services/product-comment.service';
+import { ProductCommentsController } from './controllers/product-comment.controller';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([ProductEntity,UserEntity,ProductAuditEntity,ProductDetailEntity ,AdminEntity]),AuthModule ],
-  controllers: [ProductController,ProductDetailController],
-  providers: [ProductService,ProductAuditService,ProductDetailService,CloudinaryService],
+  imports:[TypeOrmModule.forFeature([ProductEntity,UserEntity,CommentsEntity,ProductAuditEntity,ProductDetailEntity ,AdminEntity]),AuthModule ],
+  controllers: [ProductController,ProductDetailController,ProductCommentsController],
+  providers: [ProductService,ProductCommentService,ProductAuditService,ProductDetailService,CloudinaryService],
   exports: [ProductService,ProductService,ProductAuditService,ProductDetailService,CloudinaryService,TypeOrmModule],
 })
 export class ProductModule {}

@@ -8,6 +8,7 @@ import { OrderItemEntity } from "src/module/order/entities/order-items.entity";
 import { DiscountEntity } from "src/module/discount/entities/discount.entity";
 import { SaleType } from "../enums/SaleType.enum";
 import { IsString } from "class-validator";
+import { CommentsEntity } from "./comment.entity";
 
 
 
@@ -46,23 +47,23 @@ export class ProductEntity extends BaseEntityCustom {
     @Column({ type: 'varchar', length: 50, nullable: true })
     lifespan: string;
 
-    @Column({   nullable: true })
-    @IsString() 
+    @Column({ nullable: true })
+    @IsString()
     weight: string;
 
     @Column({ nullable: true })
-    @IsString() 
+    @IsString()
     thickness: string;
 
     @Column({ type: 'enum', enum: SaleType, default: SaleType.CASH })
     saleType: SaleType;
 
-    @Column({  nullable: true })
-    @IsString() 
+    @Column({ nullable: true })
+    @IsString()
     deliveryTime: string;
 
     @Column({ nullable: true })
-    @IsString() 
+    @IsString()
     deliveryCost: string;
 
     @Column({ type: 'boolean', default: true })
@@ -99,6 +100,9 @@ export class ProductEntity extends BaseEntityCustom {
 
     @OneToMany(() => DiscountEntity, discount => discount.products, { cascade: true, eager: true, })
     discounts: DiscountEntity[];
+
+    @OneToMany(() => CommentsEntity, comment => comment.product, { cascade: true, eager: true, })
+    comments: CommentsEntity[];
 
 
 
