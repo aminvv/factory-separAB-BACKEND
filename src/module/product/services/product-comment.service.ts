@@ -36,7 +36,7 @@ export class ProductCommentService {
       throw new UnauthorizedException("شما باید لاگین کنید تا کامنت بذارید");
     }
 
-    const { productId, parentId, text ,rating} = productCommentDto;
+    const { productId, parentId, text, rating } = productCommentDto;
 
     await this.productService.checkExistProductById(productId);
 
@@ -56,6 +56,7 @@ export class ProductCommentService {
     };
 
     await this.productCommentRepository.insert(payload);
+    await this.updateProductRating(productId);
 
     return {
       message: publicMessage.CreatedComment,
@@ -68,6 +69,23 @@ export class ProductCommentService {
 
 
 
+
+
+
+  private async updateProductRating(productId: number): Promise<void> {
+    const result = await this.productCommentRepository
+      .createQueryBuilder('c')
+      .select('AVG(c.rating)', 'avg')
+      .where('c.productId = :productId', { productId })
+      .andWhere('c.rating IS NOT NULL')
+      .andWhere('c.rating > 0')
+      .andWhere('c.accepted = true')
+      .getRawOne();
+
+    const avg = result?.avg ? Math.round(parseFloat(result.avg) * 10) / 10 : 0;
+
+    await this.productRepository.update(productId, { rating: avg });
+  }
 
 
 
@@ -99,9 +117,9 @@ export class ProductCommentService {
           firstName: true,
 
         },
-          admin:{
-            fullName:true
-          },
+        admin: {
+          fullName: true
+        },
         children: {
           text: true,
           parentId: true,
@@ -166,9 +184,11 @@ export class ProductCommentService {
       throw new ForbiddenException("You cannot delete this comment");
     }
 
+    const productId = comment.productId; 
     await this.productCommentRepository.delete(commentId);
-
+    await this.updateProductRating(productId);
     return { message: publicMessage.Delete };
+
   }
 
 

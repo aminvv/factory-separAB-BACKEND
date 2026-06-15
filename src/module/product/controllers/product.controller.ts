@@ -75,6 +75,18 @@ export class ProductController {
   }
 
 
+
+
+
+
+  @Get(':id/related')
+  getRelatedProducts(
+    @Param('id') id: number
+  ) {
+    return this.productService.getRelatedProducts(+id);
+  }
+
+
   @Delete('removeImage/:id')
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   removeImage(@Param('id') id: string) {

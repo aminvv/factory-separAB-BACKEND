@@ -71,7 +71,6 @@ export class ProductService {
       slug,
       image: images,
       createdBy: user,
-      active_discount: toBoolean(productDto.active_discount),
     });
 
     const saved = await this.productRepository.save(product);
@@ -89,6 +88,46 @@ export class ProductService {
       product: saved,
     };
   }
+
+
+
+
+
+  // =====================    GET RELATION PRODUCTS  ======================
+async getRelatedProducts(id: number, limit: number = 4) {
+  const current = await this.productRepository.findOne({ 
+    where: { id }, 
+    select: ['id', 'saleType', 'lifespan', 'thickness', 'weight'] 
+  });
+  if (!current) throw new NotFoundException();
+
+  let related = await this.productRepository
+    .createQueryBuilder('p')
+    .leftJoinAndSelect('p.discounts', 'discount', 'discount.code IS NULL AND discount.type = :type', { type: 'product' })
+    .where('p.status = :status', { status: true })
+    .andWhere('p.id != :id', { id })
+    .andWhere('p.saleType = :saleType', { saleType: current.saleType })
+    .orderBy('p.create_at', 'DESC')
+    .limit(limit)
+    .getMany();
+
+  if (related.length < limit) {
+    const more = await this.productRepository
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.discounts', 'discount', 'discount.code IS NULL AND discount.type = :type', { type: 'product' })
+      .where('p.status = :status', { status: true })
+      .andWhere('p.id != :id', { id })
+      .andWhere('p.id NOT IN (:...ids)', { ids: related.map(p => p.id) })
+      .orderBy('p.create_at', 'DESC')
+      .limit(limit - related.length)
+      .getMany();
+    related.push(...more);
+  }
+  return { relatedProducts: related };
+}
+
+
+
 
 
 
@@ -122,8 +161,7 @@ export class ProductService {
 
     const original = JSON.parse(JSON.stringify(product));
 
-    updateProductDto.active_discount = toBoolean(updateProductDto.active_discount);
-    
+
     for (const key of Object.keys(updateProductDto)) {
       if (updateProductDto[key] !== undefined) {
         product[key] = updateProductDto[key];
@@ -194,32 +232,32 @@ export class ProductService {
     };
   }
 
-  
 
 
 
 
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
   // =================  DECREASE QUANTITY =================
-async decreaseQuantity(productId: number, quantity: number) {
-  const product = await this.findOne(productId);
-  
-  if (!product) {
-    throw new NotFoundException('محصول یافت نشد');
+  async decreaseQuantity(productId: number, quantity: number) {
+    const product = await this.findOne(productId);
+
+    if (!product) {
+      throw new NotFoundException('محصول یافت نشد');
+    }
+
+    if (product.quantity < quantity) {
+      throw new BadRequestException('موجودی محصول کافی نیست');
+    }
+
+    product.quantity = product.quantity - quantity;
+    return this.productRepository.save(product);
   }
-  
-  if (product.quantity < quantity) {
-    throw new BadRequestException('موجودی محصول کافی نیست');
-  }
-  
-  product.quantity = product.quantity - quantity;
-  return this.productRepository.save(product);
-}
 
 
 
@@ -302,14 +340,14 @@ async decreaseQuantity(productId: number, quantity: number) {
 
 
 
-   
 
-      async checkExistProductById(id: number) {
-        const product = await this.productRepository.findOneBy({ id })
-        if (!product) throw new NotFoundException(NotFoundMessage.NotFound)
-        return product
-    }
-  
+
+  async checkExistProductById(id: number) {
+    const product = await this.productRepository.findOneBy({ id })
+    if (!product) throw new NotFoundException(NotFoundMessage.NotFound)
+    return product
+  }
+
 
 
 }

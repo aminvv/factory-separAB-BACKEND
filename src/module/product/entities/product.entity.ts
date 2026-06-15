@@ -26,17 +26,12 @@ export class ProductEntity extends BaseEntityCustom {
     @Column('int', { default: 0 })
     quantity: number;
 
-    @Column('int', { default: 0 })
-    rating: number
-
-    @Column({ nullable: false, default: false })
-    active_discount: boolean
+    @Column('decimal', { precision: 10, scale: 1, default: 0 })
+    rating: number;
 
     @Column()
     slug: string
 
-    @Column({ type: "decimal", nullable: true, default: 0 })
-    discount: number
 
     @Column({ type: 'text', nullable: true })
     description: string;

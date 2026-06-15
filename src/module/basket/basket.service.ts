@@ -20,6 +20,7 @@ export class BasketService {
   constructor(
     @Inject(REQUEST) private request: Request,
     @InjectRepository(BasketEntity) private basketRepository: Repository<BasketEntity>,
+    @InjectRepository(DiscountEntity) private discountRepository: Repository<DiscountEntity>,
     private productService: ProductService,
     private discountService: DiscountService,
   ) { }
@@ -43,13 +44,14 @@ export class BasketService {
       }
     })
 
-    if (basketItem) {
-      basketItem.quantity += quantity;
-      if (basketItem.quantity > product.quantity) {
-        throw new BadRequestException("product inventory not enough");
-      }
-      await this.basketRepository.save(basketItem)
-    } else {
+if (basketItem) {
+  const newTotal = +basketItem.quantity + +quantity;
+  if (newTotal > product.quantity) {
+    throw new BadRequestException("product inventory not enough");
+  }
+  basketItem.quantity = newTotal;
+  await this.basketRepository.save(basketItem);
+} else {
 
       const discountedItem = await this.basketRepository.findOne({
         where: {
@@ -247,11 +249,13 @@ export class BasketService {
 
       totalPrice += price * quantity
 
-      if (product.active_discount) {
-        const d = this.checkDiscountPercent(price, +product.discount)
-        price = d.newPrice
-        discountAmount += d.newDiscountAmount
-      }
+      const productDiscount = await this.discountRepository.findOne({
+        where: {
+          type: DiscountType.product,
+          productId: product.id,
+          code: IsNull(),
+        }
+      })
 
       if (item.discount && this.validateDiscount(item.discount)) {
         const discount = item.discount
@@ -284,8 +288,7 @@ export class BasketService {
         id: product.id,
         slug: product.slug,
         title: product.productName,
-        active_discount: product.active_discount,
-        discount: product.discount,
+        discount: productDiscount?.percent ?? productDiscount?.amount ?? 0,
         price,
         quantity,
       })

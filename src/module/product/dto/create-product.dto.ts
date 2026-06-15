@@ -26,11 +26,6 @@ export class ProductDto {
   @ApiProperty()
   status: boolean;
 
-  @ApiPropertyOptional()
-  discount: number;
-
-  @ApiPropertyOptional()
-  active_discount: boolean;
 
   @ApiPropertyOptional()
   description?: string;

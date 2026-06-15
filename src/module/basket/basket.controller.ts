@@ -21,7 +21,7 @@ export class BasketController {
 
   @Get()
   @UseGuards(UserGuard)
-  @ApiConsumes(swaggerConsumes.UrlEncoded)
+  @ApiConsumes(swaggerConsumes.Json)
   getBasket() {
     return this.basketService.getBasket();
   }
