@@ -7,7 +7,7 @@ export class TokenService {
   constructor(private jwtService: JwtService) {}
 
   // ===== Access Token =====
-  generateAccessToken(payload: JwtTokenPayload, expiresIn = '15m'): string {
+  generateAccessToken(payload: JwtTokenPayload, expiresIn = '1h'): string {
     const secret = process.env.JWT_SECRET || 'default_access_secret';
     return this.jwtService.sign(payload, { secret, expiresIn });
   }

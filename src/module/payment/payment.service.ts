@@ -77,12 +77,11 @@ export class PaymentService {
     });
     await this.orderRepository.save(order);
 
-    // لاگ اضافه کن
     const orderItems = basket.products.map(product => ({
       orderId: order.id,
       productId: product.id,
       quantity: product.quantity,
-      price: product.price,
+      price: product.finalPrice,
     }));
 
     await this.orderItemRepository.insert(orderItems);

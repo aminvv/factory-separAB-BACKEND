@@ -44,14 +44,14 @@ export class BasketService {
       }
     })
 
-if (basketItem) {
-  const newTotal = +basketItem.quantity + +quantity;
-  if (newTotal > product.quantity) {
-    throw new BadRequestException("product inventory not enough");
-  }
-  basketItem.quantity = newTotal;
-  await this.basketRepository.save(basketItem);
-} else {
+    if (basketItem) {
+      const newTotal = +basketItem.quantity + +quantity;
+      if (newTotal > product.quantity) {
+        throw new BadRequestException("product inventory not enough");
+      }
+      basketItem.quantity = newTotal;
+      await this.basketRepository.save(basketItem);
+    } else {
 
       const discountedItem = await this.basketRepository.findOne({
         where: {
@@ -281,6 +281,34 @@ if (basketItem) {
         }
       }
 
+
+      const activeDiscount = (item.discount && this.validateDiscount(item.discount))
+        ? item.discount
+        : (productDiscount && this.validateDiscount(productDiscount) ? productDiscount : null)
+
+      if (activeDiscount) {
+        if (!discounts.some(d => d.code === activeDiscount.code)) {
+          discounts.push({
+            percent: activeDiscount.percent,
+            amount: activeDiscount.amount,
+            code: activeDiscount.code,
+            type: activeDiscount.type as DiscountType,
+            productId: activeDiscount.productId,
+          })
+        }
+
+        if (activeDiscount.percent) {
+          const d = this.checkDiscountPercent(price, activeDiscount.percent)
+          price = d.newPrice
+          discountAmount += d.newDiscountAmount
+        } else if (activeDiscount.amount) {
+          const d = this.checkDiscountAmount(price, activeDiscount.amount)
+          price = d.newPrice
+          discountAmount += d.newDiscountAmount
+        }
+      }
+
+
       totalDiscountAmount += discountAmount * quantity
       finalAmount += price * quantity
 
@@ -288,8 +316,10 @@ if (basketItem) {
         id: product.id,
         slug: product.slug,
         title: product.productName,
-        discount: productDiscount?.percent ?? productDiscount?.amount ?? 0,
-        price,
+        originalPrice: +product.price,
+        discountPercent: activeDiscount?.percent ?? null,
+        discountAmount: activeDiscount?.amount ?? null,
+        finalPrice: price,
         quantity,
       })
     }
@@ -326,11 +356,13 @@ if (basketItem) {
     const productDiscounts = items.filter(
       i => i.discount && i.discount.type === DiscountType.product
     )
+    const avgDiscountPercent = totalPrice > 0 ? ((totalPrice - finalAmount) / totalPrice) * 100 : 0;
 
     return {
       totalPrice,
       finalAmount,
       totalDiscountAmount,
+      avgDiscountPercent,
       products,
       discounts,
       productDiscounts,
