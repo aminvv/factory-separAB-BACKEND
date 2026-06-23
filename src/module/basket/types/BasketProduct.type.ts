@@ -2,9 +2,11 @@ export type BasketProduct = {
   id: number;
   slug: string;
   title: string;
-  originalPrice: number;        // قیمت اصلی (قبل از تخفیف)
+  originalPrice: number;        
   discountPercent: number | null;
   discountAmount: number | null;
-  finalPrice: number;           // قیمت نهایی بعد از اعمال تخفیف
+  finalPrice: number;         
   quantity: number;
+  image:string
+  stock:number
 }

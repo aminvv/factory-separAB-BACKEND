@@ -50,4 +50,12 @@ export class BasketController {
   removeDiscountFromBasket(@Body() discountDto: AddDiscountToBasketDto) {
     return this.basketService.removeDiscountFromBasket(discountDto);
   }
+
+
+@Delete('/clear')
+@UseGuards(UserGuard)
+clearBasket() {
+  return this.basketService.clearBasket();
+}
+
 }
