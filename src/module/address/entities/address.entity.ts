@@ -29,6 +29,6 @@ export class AddressEntity extends BaseEntityCustom {
   @JoinColumn({ name: "userId" })
   user: UserEntity;
 
-  @OneToMany(() => OrderEntity, order => order.shippingAddress)
+  @OneToMany(() => OrderEntity, order => order.shippingAddress, { onDelete: "CASCADE" })
   orders: OrderEntity[];
 }

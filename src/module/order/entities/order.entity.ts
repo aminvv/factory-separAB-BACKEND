@@ -27,9 +27,9 @@ export class OrderEntity extends BaseEntityCustom {
     @OneToMany(() => OrderItemEntity, (orderItem) => orderItem.order, { onDelete: "CASCADE" })
     orderItems: OrderItemEntity
 
-@ManyToOne(() => AddressEntity, address => address.orders, { nullable: true })
-@JoinColumn({ name: 'shipping_address_id' })
-shippingAddress: AddressEntity;
+    @ManyToOne(() => AddressEntity, address => address.orders, { nullable: true, onDelete: 'SET NULL'})
+    @JoinColumn({ name: 'shipping_address_id' })
+    shippingAddress: AddressEntity;
 
     @OneToOne(() => PaymentEntity, (payment) => payment.order, { onDelete: "SET NULL" })
     @JoinColumn()

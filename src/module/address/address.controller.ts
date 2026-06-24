@@ -18,7 +18,7 @@ import { swaggerConsumes } from "src/common/enums/swagger-consumes.enum";
 @ApiTags("UserAddress")
 @ApiBearerAuth("Authorization")
 @UseGuards(UserGuard)
-@Controller("user/address")
+@Controller("address")
 export class AddressController {
   constructor(private readonly addressService: AddressService) { }
 

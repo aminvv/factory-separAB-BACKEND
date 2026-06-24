@@ -22,21 +22,45 @@ export class AddressService {
       ...dto,
       user: user,
     });
-    
+
     return this.addressRepository.save(address);
   }
-  
+
+
+
+
+
+
+
+
+
   async findAll() {
-    const user = this.request.user
+    const user = this.request.user;
+    if (!user || !user.id) {
+      return [];
+    }
     return this.addressRepository.find({
-      where: { user:{id:user?.id} },
+      where: {
+        user: {
+          id: user.id
+        }
+      },
     });
   }
+
+
+
+
+
+
+
+
+
 
   async findOne() {
     const user = this.request.user
     const address = await this.addressRepository.findOne({
-      where: { user:{id:user?.id} },
+      where: { user: { id: user?.id } },
     });
 
     if (!address) throw new NotFoundException("Address not found");
@@ -44,13 +68,33 @@ export class AddressService {
     return address;
   }
 
+
+
+
+
+
+
+
+
+
   async update(id: number, dto: UpdateAddressDto) {
-    const address = await this.findOne();
-
-    Object.assign(address, dto);
-
-    return this.addressRepository.save(address);
+    try {
+      const address = await this.findOne();
+      Object.assign(address, dto);
+      return this.addressRepository.save(address);
+    } catch (error) {
+      return error.message
+    }
   }
+
+
+
+
+
+
+
+
+
 
   async remove(id: number) {
     const address = await this.findOne();
