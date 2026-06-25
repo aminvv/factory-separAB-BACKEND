@@ -20,7 +20,7 @@ export class ZarinnpalService {
         email: user?.email ?? "",
         mobile: user?.mobile ?? ""
       },
-      callback_url: "http://localhost:3000/payment/verify"
+      callback_url: "http://localhost:4000/payment/verify"
     }
     const result = await lastValueFrom(
       this.httpService.post(process.env.ZARINNPAL_REQUEST_URL, option)
@@ -60,3 +60,4 @@ export class ZarinnpalService {
     return result
   }
 }
+ 

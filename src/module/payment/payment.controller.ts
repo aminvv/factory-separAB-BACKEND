@@ -18,16 +18,36 @@ export class PaymentController {
   create(@Body() addressDto: CreatePaymentDto) {
     return this.paymentService.create(addressDto.address);
   }
+
+
+
   @Get("/verify")
-  @ApiConsumes(swaggerConsumes.UrlEncoded)
-  async verify(@Query("authority") authority: string, @Query("status") status: string, @Res() res: Response) {
+  async verify(
+    @Query("Authority") authority: string,
+    @Query("Status") status: string,
+    @Res() res: Response
+  ) {
     const url = await this.paymentService.verify(authority, status);
-    return res.redirect(url)
+    return res.redirect(url);
   }
+
+
+
   @Get("/find-payment")
   async find() {
     return this.paymentService.find();
 
+  }
+
+
+  @Get('success')
+  success(@Query('order_no') orderId: string) {
+    return { message: 'پرداخت موفق', orderId };
+  }
+
+  @Get('failedUrl')
+  failed() {
+    return { message: 'پرداخت ناموفق' };
   }
 
 

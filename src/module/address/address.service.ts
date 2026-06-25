@@ -88,7 +88,7 @@ export class AddressService {
           id: user.id
         }
       },
-      order: {
+      order: { 
         isDefault: 'DESC',
         created_at: 'DESC'
       }
@@ -98,7 +98,7 @@ export class AddressService {
 
 
 
-
+ 
 
 
 

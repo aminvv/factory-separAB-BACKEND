@@ -16,9 +16,16 @@ import { DiscountService } from '../discount/discount.service';
 import { BasketEntity } from '../basket/entities/basket.entity';
 import { DiscountEntity } from '../discount/entities/discount.entity';
 import { AddressEntity } from '../address/entities/address.entity';
+import axios from 'axios';
+
 
 @Injectable({ scope: Scope.REQUEST })
 export class PaymentService {
+
+
+
+  
+  
   constructor(
     @InjectRepository(PaymentEntity) private paymentRepository: Repository<PaymentEntity>,
     @InjectRepository(OrderEntity) private orderRepository: Repository<OrderEntity>,
@@ -32,7 +39,7 @@ export class PaymentService {
     private zarinnpalService: ZarinnpalService,
     private discountService: DiscountService,
   ) { }
-
+  
 
 
 
@@ -75,7 +82,7 @@ export class PaymentService {
       shippingAddress: address,
       status: OrderStatus.Pending,
     });
-    await this.orderRepository.save(order);
+
 
     const orderItems = basket.products.map(product => ({
       orderId: order.id,
@@ -125,76 +132,88 @@ export class PaymentService {
 
 
   // ================= VERIFY  =======================
-  async verify(authority: string, status: string) {
-    const payment = await this.paymentRepository.findOne({
-      where: { authority },
-      relations: ['order', 'order.user']
-    });
+async verify(authority: string, status: string) {
+  const payment = await this.paymentRepository.findOne({
+    where: { authority },
+    relations: ['order', 'order.user'],
+  });
 
+  if (!payment) throw new NotFoundException('پرداخت یافت نشد');
+  if (payment.status) throw new BadRequestException('پرداخت قبلاً تایید شده');
 
-    if (!payment) throw new NotFoundException("not found payment");
-    if (payment.status) throw new BadRequestException("already verified payment");
+  if (status !== 'OK') return   `${process.env.FRONTEND_URL}/payment/failedUrl`;
 
-    if (status === "OK") {
-      const order = await this.orderRepository.findOne({
-        where: { id: payment.order.id }
-      });
+  // ← تایید با زرین‌پال
+  const response = await axios.post(
+    'https://sandbox.zarinpal.com/pg/v4/payment/verify.json',
+    {
+      merchant_id: process.env.ZARINNPAL_MERCHANT_ID,
+      amount: payment.amount,
+      authority,
+    }
+  );
 
-      if (!order) throw new NotFoundException("orderNotFound");
+  const code = response.data.data.code;
+  if (code !== 100 && code !== 101) {
+    throw new BadRequestException('پرداخت تایید نشد');
+  } 
 
-      const userId = payment.order.user.id;
+  const order = await this.orderRepository.findOne({
+    where: { id: payment.order.id }, 
+  });
+  if (!order) throw new NotFoundException('سفارش یافت نشد');
 
-      const basketItems = await this.basketRepository.find({
-        where: { userId },
-        relations: ['discount']
-      });
-      const orderItems = await this.orderItemRepository.find({
-        where: { orderId: order.id }
-      });
+  const userId = payment.order.user.id;
 
-      order.status = OrderStatus.Ordered;
-      payment.status = true;
+  const basketItems = await this.basketRepository.find({
+    where: { userId },
+    relations: ['discount'],
+  });
 
-      for (const item of orderItems) {
-        await this.productService.decreaseQuantity(item.productId, item.quantity);
+  const orderItems = await this.orderItemRepository.find({
+    where: { orderId: order.id },
+  });
+
+  // آپدیت وضعیت
+  order.status = OrderStatus.Ordered;
+  payment.status = true;
+  payment.refId = response.data.data.ref_id; // ← اگه فیلد داری
+
+  // کاهش موجودی
+  for (const item of orderItems) {
+    await this.productService.decreaseQuantity(item.productId, item.quantity);
+  }
+
+  // افزایش استفاده از تخفیف
+  for (const item of basketItems) {
+    if (item.discountId) {
+      try {
+        await this.discountService.increaseDiscountUsage(item.discountId);
+      } catch (error) {
+        console.warn(`تخفیف ${item.discountId} قابل افزایش نبود:`, error.message);
       }
-      for (const item of basketItems) {
-        if (item.discountId) {
-          try {
-            await this.discountService.increaseDiscountUsage(item.discountId);
-          } catch (error) {
-            console.warn(`تخفیف ${item.discountId} قابل افزایش نبود:`, error.message);
-          }
 
-          const discount = await this.discountRepository.findOneBy({ id: item.discountId });
-          if (discount) {
-            const usedByUsers = discount.usedByUsers || [];
-            if (!usedByUsers.includes(userId.toString())) {
-              usedByUsers.push(userId.toString());
-              discount.usedByUsers = usedByUsers;
-              await this.discountRepository.save(discount);
-            }
-          }
+      const discount = await this.discountRepository.findOneBy({ id: item.discountId });
+      if (discount) {
+        const usedByUsers = discount.usedByUsers || [];
+        if (!usedByUsers.includes(userId.toString())) {
+          usedByUsers.push(userId.toString());
+          discount.usedByUsers = usedByUsers;
+          await this.discountRepository.save(discount);
         }
       }
-
-      if (payment.order?.user?.id) {
-        await this.clearUserBasket(payment.order.user.id);
-      }
-
-
-
-
-
-      await this.paymentRepository.save(payment);
-      await this.orderRepository.save(order);
-
-      return `http://frontEndUrl/payment/success?order_no=${order.id}`;
-    } else {
-      return "http://frontEndUrl/payment/failedUrl";
     }
   }
 
+  // پاک کردن سبد
+  await this.clearUserBasket(userId);
+
+  // ذخیره
+  await this.orderRepository.save(order);
+  await this.paymentRepository.save(payment);
+
+  return `${process.env.FRONTEND_URL}/payment/success?order_no=${order.id}`;
+}
 
 
 
