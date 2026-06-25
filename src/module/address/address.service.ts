@@ -1,7 +1,7 @@
 
-import { Injectable, Scope, Inject, NotFoundException, ForbiddenException, } from "@nestjs/common";
+import { Injectable, Scope, Inject, NotFoundException, ForbiddenException, UnauthorizedException, } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
-import { Request } from "express";
+import { request, Request } from "express";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { AddressEntity } from "./entities/address.entity";
@@ -16,15 +16,58 @@ export class AddressService {
     @InjectRepository(AddressEntity) private readonly addressRepository: Repository<AddressEntity>,
   ) { }
 
-  async create(dto: CreateAddressDto) {
-    const user = this.request.user
-    const address = this.addressRepository.create({
-      ...dto,
-      user: user,
-    });
 
-    return this.addressRepository.save(address);
+
+
+
+
+
+
+
+
+
+  async CheckIsDefault(dto, user) {
+    if (!user) throw new UnauthorizedException(' وارد حساب کاربری خود شوید');
+    if (dto.isDefault) {
+      await this.addressRepository
+        .createQueryBuilder()
+        .update()
+        .set({ isDefault: false })
+        .where("userId = :userId AND isDefault = :isDefault", {
+          userId: user.id,
+          isDefault: true,
+        })
+        .execute();
+    }
   }
+
+
+
+
+
+
+
+
+
+
+
+  async create(dto: CreateAddressDto) {
+    try {
+      const user = this.request.user;
+      this.CheckIsDefault(dto, user)
+      const address = this.addressRepository.create({
+        ...dto,
+        user: user,
+      });
+
+      return this.addressRepository.save(address);
+
+    } catch (err) {
+
+    }
+  }
+
+
 
 
 
@@ -45,6 +88,10 @@ export class AddressService {
           id: user.id
         }
       },
+      order: {
+        isDefault: 'DESC',
+        created_at: 'DESC'
+      }
     });
   }
 
@@ -79,6 +126,8 @@ export class AddressService {
 
   async update(id: number, dto: UpdateAddressDto) {
     try {
+      const user = this.request.user
+      this.CheckIsDefault(dto, user)
       const address = await this.findOne();
       Object.assign(address, dto);
       return this.addressRepository.save(address);

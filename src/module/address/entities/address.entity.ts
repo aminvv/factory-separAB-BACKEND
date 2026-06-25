@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import { Entity, Column, ManyToOne, JoinColumn, OneToMany, CreateDateColumn } from "typeorm";
 import { BaseEntityCustom } from "src/common/abstracts/EntityBasecustom";
 import { EntityName } from "src/common/enums/entity.enum";
 import { UserEntity } from "src/module/user/entities/user.entity";
@@ -24,6 +24,9 @@ export class AddressEntity extends BaseEntityCustom {
 
   @Column({ default: false })
   isDefault: boolean;
+
+  @CreateDateColumn()
+  created_at: Date
 
   @ManyToOne(() => UserEntity, user => user.addresses, { onDelete: "CASCADE" })
   @JoinColumn({ name: "userId" })

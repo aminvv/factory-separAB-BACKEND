@@ -1,5 +1,6 @@
 export type BasketProduct = {
   id: number;
+  basketItemId: number;
   slug: string;
   title: string;
   originalPrice: number;        

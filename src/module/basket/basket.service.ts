@@ -232,16 +232,16 @@ export class BasketService {
     let totalPrice = 0
     let totalDiscountAmount = 0
 
-const items = await this.basketRepository.find({
-  where: { userId },
-  relations: {
-    product: true,
-    discount: true,
-  },
-  order: {
-    id: 'ASC'
-  }
-})
+    const items = await this.basketRepository.find({
+      where: { userId },
+      relations: {
+        product: true,
+        discount: true,
+      },
+      order: {
+        id: 'ASC'
+      }
+    })
 
     const productItems = items.filter(i => i.product)
 
@@ -317,12 +317,13 @@ const items = await this.basketRepository.find({
 
       products.push({
         id: product.id,
+        basketItemId: item.id,
         slug: product.slug,
         title: product.productName,
         originalPrice: +product.price,
         discountPercent: activeDiscount?.percent ?? null,
         discountAmount: activeDiscount?.amount ?? null,
-        image: product.image?.[0]?.url ?? null, 
+        image: product.image?.[0]?.url ?? null,
         finalPrice: price,
         quantity,
         stock: product.quantity,
@@ -505,11 +506,11 @@ const items = await this.basketRepository.find({
 
 
   //================== CLEAR BASKET FOR USER ==============================
-async clearBasket() {
-  const userId = this.request.user?.id;
-  await this.basketRepository.delete({ userId });
-  return { message: "basket deleted success" };
-}
+  async clearBasket() {
+    const userId = this.request.user?.id;
+    await this.basketRepository.delete({ userId });
+    return { message: "basket deleted success" };
+  }
 
 
 
