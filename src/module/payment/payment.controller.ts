@@ -40,10 +40,7 @@ export class PaymentController {
   }
 
 
-  @Get('success')
-  success(@Query('order_no') orderId: string) {
-    return { message: 'پرداخت موفق', orderId };
-  }
+
 
   @Get('failedUrl')
   failed() {
@@ -51,4 +48,4 @@ export class PaymentController {
   }
 
 
-}
+} 

@@ -1,14 +1,16 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrderEntity } from './entities/order.entity';
 import { Repository } from 'typeorm';
 import { OrderStatus } from './enum/order.enum';
+import { Request } from 'express';
+import { REQUEST } from '@nestjs/core';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class OrderService {
   constructor(
-    @InjectRepository(OrderEntity)
-    private orderRepository: Repository<OrderEntity>,
+    @InjectRepository(OrderEntity) private orderRepository: Repository<OrderEntity>,
+    @Inject(REQUEST) private request: Request
   ) { }
 
   // ===============  GET ALL FOR ADMIN =========================
@@ -18,8 +20,8 @@ export class OrderService {
         user: true,
         payment: true,
         shippingAddress: true,
-        orderItems: {  
-          product: true 
+        orderItems: {
+          product: true
         }
       },
       order: {
@@ -107,4 +109,38 @@ export class OrderService {
     await this.orderRepository.save(order);
     return { message: "order canceled successfully" };
   }
+
+
+
+
+
+
+
+
+
+
+
+
+  // ===============  FIND BY ID FOR USER =========================
+  async findByIdForUser(orderId: number) {
+    const userId = this.request.user?.id
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId, user: { id: userId } },
+      relations: {
+        user: true,
+        shippingAddress: true,
+        payment: true,
+        orderItems: {
+          product: true,
+        },
+      },
+    });
+    if (!order) throw new NotFoundException('سفارش یافت نشد');
+    return order;
+  }
+
+
+
+
+
 }
