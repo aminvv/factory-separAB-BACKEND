@@ -1,5 +1,6 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CloudinaryService } from 'src/common/services/cloudinary.service';
 import { TypeOrmConfig } from 'src/config/typeorm.config';
@@ -21,6 +22,7 @@ import { DataSource } from 'typeorm';
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env', }),
     TypeOrmModule.forRoot(TypeOrmConfig()),
+    ScheduleModule.forRoot(),
     AuthModule,
     ProductModule,
     DiscountModule,

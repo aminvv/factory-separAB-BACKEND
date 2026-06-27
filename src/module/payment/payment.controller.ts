@@ -42,10 +42,11 @@ export class PaymentController {
 
 
 
-  @Get('failedUrl')
-  failed() {
-    return { message: 'پرداخت ناموفق' };
-  }
 
+  @Get('by-authority/:authority')
+  @UseGuards(UserGuard)
+  findByAuthority(@Param('authority') authority: string) {
+    return this.paymentService.findByAuthority(authority);
+  }
 
 } 

@@ -24,8 +24,8 @@ export class PaymentService {
 
 
 
-  
-  
+
+
   constructor(
     @InjectRepository(PaymentEntity) private paymentRepository: Repository<PaymentEntity>,
     @InjectRepository(OrderEntity) private orderRepository: Repository<OrderEntity>,
@@ -39,7 +39,7 @@ export class PaymentService {
     private zarinnpalService: ZarinnpalService,
     private discountService: DiscountService,
   ) { }
-  
+
 
 
 
@@ -103,7 +103,7 @@ export class PaymentService {
 
     const generateNumericInvoice = (): string => {
       const timestamp = Date.now().toString().slice(-6);
-      const random = Math.floor(1000 + Math.random() * 9000); 
+      const random = Math.floor(1000 + Math.random() * 9000);
       return `${timestamp}${random}`;
     };
 
@@ -132,88 +132,89 @@ export class PaymentService {
 
 
   // ================= VERIFY  =======================
-async verify(authority: string, status: string) {
-  const payment = await this.paymentRepository.findOne({
-    where: { authority },
-    relations: ['order', 'order.user'],
-  });
+  async verify(authority: string, status: string) {
+    const payment = await this.paymentRepository.findOne({
+      where: { authority },
+      relations: ['order', 'order.user'],
+    });
 
-  if (!payment) throw new NotFoundException('پرداخت یافت نشد');
-  if (payment.status) throw new BadRequestException('پرداخت قبلاً تایید شده');
+    if (!payment) throw new NotFoundException('پرداخت یافت نشد');
+    if (payment.status) throw new BadRequestException('پرداخت قبلاً تایید شده');
 
-  if (status !== 'OK') return   `${process.env.FRONTEND_URL}/payment/failedUrl`;
-
-  // ← تایید با زرین‌پال
-  const response = await axios.post(
-    'https://sandbox.zarinpal.com/pg/v4/payment/verify.json',
-    {
-      merchant_id: process.env.ZARINNPAL_MERCHANT_ID,
-      amount: payment.amount,
-      authority,
+    if (status !== 'OK') {
+      return `${process.env.FRONTEND_URL}/payment/failedUrl?authority=${authority}`;
     }
-  );
 
-  const code = response.data.data.code;
-  if (code !== 100 && code !== 101) {
-    throw new BadRequestException('پرداخت تایید نشد');
-  } 
-
-  const order = await this.orderRepository.findOne({
-    where: { id: payment.order.id }, 
-  });
-  if (!order) throw new NotFoundException('سفارش یافت نشد');
-
-  const userId = payment.order.user.id;
-
-  const basketItems = await this.basketRepository.find({
-    where: { userId },
-    relations: ['discount'],
-  });
-
-  const orderItems = await this.orderItemRepository.find({
-    where: { orderId: order.id },
-  });
-
-  // آپدیت وضعیت
-  order.status = OrderStatus.Ordered;
-  payment.status = true;
-  payment.refId = response.data.data.ref_id; // ← اگه فیلد داری
-
-  // کاهش موجودی
-  for (const item of orderItems) {
-    await this.productService.decreaseQuantity(item.productId, item.quantity);
-  }
-
-  // افزایش استفاده از تخفیف
-  for (const item of basketItems) {
-    if (item.discountId) {
-      try {
-        await this.discountService.increaseDiscountUsage(item.discountId);
-      } catch (error) {
-        console.warn(`تخفیف ${item.discountId} قابل افزایش نبود:`, error.message);
+    // ← تایید با زرین‌پال
+    const response = await axios.post(
+      'https://sandbox.zarinpal.com/pg/v4/payment/verify.json',
+      {
+        merchant_id: process.env.ZARINNPAL_MERCHANT_ID,
+        amount: payment.amount,
+        authority,
       }
+    );
 
-      const discount = await this.discountRepository.findOneBy({ id: item.discountId });
-      if (discount) {
-        const usedByUsers = discount.usedByUsers || [];
-        if (!usedByUsers.includes(userId.toString())) {
-          usedByUsers.push(userId.toString());
-          discount.usedByUsers = usedByUsers;
-          await this.discountRepository.save(discount);
+    const code = response.data.data.code;
+    if (code !== 100 && code !== 101) {
+      throw new BadRequestException('پرداخت تایید نشد');
+    }
+
+    const order = await this.orderRepository.findOne({
+      where: { id: payment.order.id },
+    });
+    if (!order) throw new NotFoundException('سفارش یافت نشد');
+
+    const userId = payment.order.user.id;
+
+    const basketItems = await this.basketRepository.find({
+      where: { userId },
+      relations: ['discount'],
+    });
+
+    const orderItems = await this.orderItemRepository.find({
+      where: { orderId: order.id },
+    });
+
+    order.status = OrderStatus.Ordered;
+    payment.status = true;
+    payment.refId = response.data.data.ref_id;
+
+    // کاهش موجودی
+    for (const item of orderItems) {
+      await this.productService.decreaseQuantity(item.productId, item.quantity);
+    }
+
+    // افزایش استفاده از تخفیف
+    for (const item of basketItems) {
+      if (item.discountId) {
+        try {
+          await this.discountService.increaseDiscountUsage(item.discountId);
+        } catch (error) {
+          console.warn(`تخفیف ${item.discountId} قابل افزایش نبود:`, error.message);
+        }
+
+        const discount = await this.discountRepository.findOneBy({ id: item.discountId });
+        if (discount) {
+          const usedByUsers = discount.usedByUsers || [];
+          if (!usedByUsers.includes(userId.toString())) {
+            usedByUsers.push(userId.toString());
+            discount.usedByUsers = usedByUsers;
+            await this.discountRepository.save(discount);
+          }
         }
       }
     }
+
+    // پاک کردن سبد
+    await this.clearUserBasket(userId);
+
+    // ذخیره
+    await this.orderRepository.save(order);
+    await this.paymentRepository.save(payment);
+
+    return `${process.env.FRONTEND_URL}/payment/success?order_no=${order.id}`;
   }
-
-  // پاک کردن سبد
-  await this.clearUserBasket(userId);
-
-  // ذخیره
-  await this.orderRepository.save(order);
-  await this.paymentRepository.save(payment);
-
-  return `${process.env.FRONTEND_URL}/payment/success?order_no=${order.id}`;
-}
 
 
 
@@ -243,4 +244,39 @@ async verify(authority: string, status: string) {
       console.error("خطا در پاک کردن سبد خرید:", error);
     }
   }
+
+
+
+
+
+
+
+  async findByAuthority(authority: string) {
+    const userId=this.request.user?.id
+    const payment = await this.paymentRepository.findOne({
+      where: { authority, order: { user: { id: userId } } },
+      relations: ['order', 'order.user', 'order.shippingAddress', 'order.orderItems', 'order.orderItems.product', 'order.payment',],
+    });
+    if (!payment) throw new NotFoundException('پرداخت یافت نشد');
+    return payment.order;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
+
+
+
+
