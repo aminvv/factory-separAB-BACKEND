@@ -15,6 +15,7 @@ import { ImageModule } from 'src/module/image/image.module';
 import { OrderModule } from 'src/module/order/order.module';
 import { PaymentModule } from 'src/module/payment/payment.module';
 import { ProductModule } from 'src/module/product/product.module';
+import { SiteSettingsModule } from 'src/module/site-settings/site-settings.module';
 import { UserModule } from 'src/module/user/user.module';
 import { WishlistModule } from 'src/module/wishlist/wishlist.module';
 import { DataSource } from 'typeorm';
@@ -36,6 +37,7 @@ import { DataSource } from 'typeorm';
     AdminModule,
     WishlistModule,
     AddressModule,
+    SiteSettingsModule,
     HttpApiModule
   ],
   providers: [ CloudinaryService],

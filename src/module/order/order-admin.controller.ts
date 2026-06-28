@@ -13,7 +13,7 @@ export class OrderAdminController {
   getAll() {
     return this.orderService.getAllForAdmin();
   }
-
+ 
   @Get(':id')
   getDetail(@Param('id') id: number) {
     return this.orderService.findById(+id);
