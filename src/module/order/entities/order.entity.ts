@@ -21,13 +21,28 @@ export class OrderEntity extends BaseEntityCustom {
     @CreateDateColumn()
     create_at: Date
 
+    @Column({ nullable: true })
+    snapshot_province: string;
+
+    @Column({ nullable: true })
+    snapshot_city: string;
+
+    @Column({ nullable: true })
+    snapshot_street: string;
+
+    @Column({ nullable: true })
+    snapshot_postalCode: string;
+
+    @Column({ nullable: true })
+    snapshot_plaque: string;
+
     @ManyToOne(() => UserEntity, user => user.orders)
     user: UserEntity;
 
     @OneToMany(() => OrderItemEntity, (orderItem) => orderItem.order, { onDelete: "CASCADE" })
     orderItems: OrderItemEntity
 
-    @ManyToOne(() => AddressEntity, address => address.orders, { nullable: true, onDelete: 'SET NULL'})
+    @ManyToOne(() => AddressEntity, address => address.orders, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn({ name: 'shipping_address_id' })
     shippingAddress: AddressEntity;
 

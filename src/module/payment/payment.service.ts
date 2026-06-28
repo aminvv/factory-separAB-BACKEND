@@ -80,6 +80,11 @@ export class PaymentService {
       total_amount: basket.totalPrice,
       discount_amount: basket.totalDiscountAmount,
       shippingAddress: address,
+      snapshot_province: address.province,
+      snapshot_city: address.city,
+      snapshot_street: address.street,
+      snapshot_postalCode: address.postalCode,
+      snapshot_plaque: address.plaque, 
       status: OrderStatus.Pending,
     });
 
@@ -252,7 +257,7 @@ export class PaymentService {
 
 
   async findByAuthority(authority: string) {
-    const userId=this.request.user?.id
+    const userId = this.request.user?.id
     const payment = await this.paymentRepository.findOne({
       where: { authority, order: { user: { id: userId } } },
       relations: ['order', 'order.user', 'order.shippingAddress', 'order.orderItems', 'order.orderItems.product', 'order.payment',],

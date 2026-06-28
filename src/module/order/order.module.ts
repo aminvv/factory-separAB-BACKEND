@@ -8,12 +8,13 @@ import { DiscountModule } from '../discount/discount.module';
 import { AuthModule } from '../auth/auth.module';
 import { InvoiceController } from './invoice.controller';
 import { InvoiceService } from './Invoice.service';
-import { OrderController } from './order-user.controller';
-import { OrderUserController } from './order-admin.controller';
+import { OrderUserController } from './order-user.controller';
+import { OrderAdminController } from './order-admin.controller';
+
 
 @Module({
   imports:[TypeOrmModule.forFeature([OrderEntity,OrderItemEntity]),ProductModule,DiscountModule,AuthModule],
-  controllers: [OrderController,InvoiceController,OrderUserController],
+  controllers: [OrderAdminController,InvoiceController,OrderUserController],
   providers: [OrderService,InvoiceService],
   exports:[OrderService,TypeOrmModule,InvoiceService]
 })

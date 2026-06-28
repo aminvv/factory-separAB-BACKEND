@@ -143,4 +143,21 @@ export class OrderService {
 
 
 
+  // ===============  GET ALL FOR USER =========================
+  async getAllForUser() {
+    const userId = this.request.user?.id;
+    return this.orderRepository.find({
+      where: { user: { id: userId } },
+      relations: {
+        payment: true,
+        shippingAddress: true,
+        orderItems: {
+          product: true,
+        },
+      },
+      order: { create_at: 'DESC' },
+    });
+  }
+
+
 }

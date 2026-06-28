@@ -6,4 +6,5 @@ export enum OrderStatus {
     InTransit="inTransit",
     Canceled="canceled",
     Delivered="delivered",
+    Refunded = 'refunded'
 }

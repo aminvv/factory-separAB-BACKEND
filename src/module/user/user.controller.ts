@@ -6,23 +6,34 @@ import {
   Delete,
   Param,
   Body,
+  UseGuards,
+  Req,
 } from "@nestjs/common";
 import { ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { swaggerConsumes } from "src/common/enums/swagger-consumes.enum";
+import { UserGuard } from "../auth/guards/userGuard.guard";
+import { Request } from 'express';
 
 @ApiTags("User")
 @Controller("user")
 export class UserController {
 
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Post()
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   create(@Body() dto: CreateUserDto) {
     return this.userService.create(dto);
+  }
+
+
+  @Get('profile')
+  @UseGuards(UserGuard)
+  getProfile(@Req() req: Request) {
+    return req.user;
   }
 
   @Get()
@@ -39,7 +50,7 @@ export class UserController {
 
   @Patch(":id")
   @ApiConsumes(swaggerConsumes.UrlEncoded)
-  update(@Param("id") id: number,@Body() dto: UpdateUserDto,) {
+  update(@Param("id") id: number, @Body() dto: UpdateUserDto,) {
     return this.userService.update(+id, dto);
   }
 
@@ -48,4 +59,7 @@ export class UserController {
   remove(@Param("id") id: number) {
     return this.userService.remove(+id);
   }
+
+
 }
+ 

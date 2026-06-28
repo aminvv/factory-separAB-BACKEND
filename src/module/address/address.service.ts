@@ -120,21 +120,14 @@ export class AddressService {
 
 
 
-
-
-
-
-  async update(id: number, dto: UpdateAddressDto) {
-    try {
-      const user = this.request.user
-      this.CheckIsDefault(dto, user)
-      const address = await this.findOne();
-      Object.assign(address, dto);
-      return this.addressRepository.save(address);
-    } catch (error) {
-      return error.message
-    }
-  }
+  async findOneById(id: number) {
+  const user = this.request.user;
+  const address = await this.addressRepository.findOne({
+    where: { id, user: { id: user?.id } },
+  });
+  if (!address) throw new NotFoundException('آدرس یافت نشد');
+  return address;
+}
 
 
 
@@ -143,13 +136,26 @@ export class AddressService {
 
 
 
+async update(id: number, dto: UpdateAddressDto) {
+  const user = this.request.user
+  await this.CheckIsDefault(dto, user)
+  const address = await this.findOneById(id)
+  Object.assign(address, dto)
+  return this.addressRepository.save(address)
+}
 
 
-  async remove(id: number) {
-    const address = await this.findOne();
 
-    await this.addressRepository.remove(address);
 
-    return { message: "Address removed successfully" };
-  }
+
+
+
+
+
+
+async remove(id: number) {
+  const address = await this.findOneById(id)
+  await this.addressRepository.remove(address)
+  return { message: 'Address removed successfully' }
+}
 }
