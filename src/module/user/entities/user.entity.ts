@@ -9,6 +9,7 @@ import { PaymentEntity } from "src/module/payment/entities/payment.entity"
 import { AddressEntity } from "src/module/address/entities/address.entity";
 import { AdminEntity } from "src/module/admin/entities/admin.entity"
 import { ImageEntity } from "src/module/image/entities/image.entity"
+import { WishlistEntity } from "src/module/wishlist/entities/wishlist.entity"
 
 
 
@@ -53,5 +54,8 @@ export class UserEntity extends BaseEntityCustom {
     @OneToOne(() => AdminEntity, (admin) => admin.user)
     admin: AdminEntity
 
+
+    @OneToMany(() => WishlistEntity, w => w.user)
+    wishlists: WishlistEntity[];
 
 }

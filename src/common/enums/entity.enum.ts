@@ -13,6 +13,7 @@ Image="image",
 BlogComments="blogComments",
 ProductComments="productComments",
 Otp="otp",
+Wishlist="wishlist",
 Product_Audit="product_audit",
 ProductDetail="product_detail",
 }

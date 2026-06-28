@@ -16,6 +16,7 @@ import { OrderModule } from 'src/module/order/order.module';
 import { PaymentModule } from 'src/module/payment/payment.module';
 import { ProductModule } from 'src/module/product/product.module';
 import { UserModule } from 'src/module/user/user.module';
+import { WishlistModule } from 'src/module/wishlist/wishlist.module';
 import { DataSource } from 'typeorm';
 
 @Module({
@@ -33,6 +34,7 @@ import { DataSource } from 'typeorm';
     OrderModule,
     UserModule,
     AdminModule,
+    WishlistModule,
     AddressModule,
     HttpApiModule
   ],

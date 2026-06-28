@@ -9,6 +9,7 @@ import { DiscountEntity } from "src/module/discount/entities/discount.entity";
 import { SaleType } from "../enums/SaleType.enum";
 import { IsString } from "class-validator";
 import { CommentsEntity } from "./comment.entity";
+import { WishlistEntity } from "src/module/wishlist/entities/wishlist.entity";
 
 
 
@@ -99,6 +100,7 @@ export class ProductEntity extends BaseEntityCustom {
     @OneToMany(() => CommentsEntity, comment => comment.product, { cascade: true, eager: true, })
     comments: CommentsEntity[];
 
-
+    @OneToMany(() => WishlistEntity, w => w.product)
+    wishlists: WishlistEntity[];
 
 }
