@@ -73,6 +73,37 @@ export class BlogCommentService {
 
 
 
+  async findMyComments() {
+    const userId = this.request.user?.id;
+    if (!userId) throw new UnauthorizedException('لاگین کنید');
+
+    return this.commentBlogRepository.find({
+      where: { userId, parentId: IsNull() },
+      relations: { blog: true },
+      select: {
+        id: true,
+        text: true,
+        accepted: true,
+        created_at: true,
+        blog: {
+          title: true,
+          slug: true,
+          thumbnail: true,
+        }
+      },
+      order: { created_at: 'DESC' },
+    });
+  }
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -102,9 +133,9 @@ export class BlogCommentService {
           firstName: true,
 
         },
-          admin:{
-            fullName:true
-          },
+        admin: {
+          fullName: true
+        },
         children: {
           text: true,
           parentId: true,

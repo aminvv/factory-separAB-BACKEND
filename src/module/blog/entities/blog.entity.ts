@@ -16,6 +16,7 @@ export class BlogEntity extends BaseEntityCustom {
 
     @Column()
     content: string
+    
 
     @Column()
     slug: string

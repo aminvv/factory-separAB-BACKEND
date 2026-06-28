@@ -164,6 +164,32 @@ export class ProductCommentService {
 
 
 
+ async findMyComments() {
+  const userId = this.request.user?.id;
+  if (!userId) throw new UnauthorizedException('لاگین کنید');
+  
+  return this.productCommentRepository.find({
+    where: { userId, parentId: IsNull() },
+    relations: { product: true },
+    select: {
+      id: true,
+      text: true,
+      rating: true,
+      accepted: true,
+      created_at: true,
+      product: {
+        productName: true,
+        slug: true,
+        image: true,
+      }
+    },
+    order: { created_at: 'DESC' },
+  });
+}
+
+
+
+
 
 
 
@@ -184,7 +210,7 @@ export class ProductCommentService {
       throw new ForbiddenException("You cannot delete this comment");
     }
 
-    const productId = comment.productId; 
+    const productId = comment.productId;
     await this.productCommentRepository.delete(commentId);
     await this.updateProductRating(productId);
     return { message: publicMessage.Delete };

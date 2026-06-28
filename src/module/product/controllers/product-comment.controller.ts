@@ -22,9 +22,16 @@ export class ProductCommentsController {
 
 
 
+  @Get('my')
+  @UseGuards(AnyAuthGuard)
+  getMyComments() {
+    return this.ProductCommentService.findMyComments();
+  }
+
+
 
   @Delete("delete/:commentId")
- @UseGuards(AnyAuthGuard)
+  @UseGuards(AnyAuthGuard)
   remove(@Param("commentId") id: number) {
     return this.ProductCommentService.remove(id);
   }
@@ -34,13 +41,13 @@ export class ProductCommentsController {
 
 
 
-@Get('/product/:productId')
-@ApiConsumes(swaggerConsumes.UrlEncoded)
-async getProductComments(
-  @Param('productId') productId: number,
-  @Query() paginationDto: PaginationDto
-) {
-  return this.ProductCommentService.findCommendOfproduct(productId, paginationDto);
-}
+  @Get('/product/:productId')
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
+  async getProductComments(
+    @Param('productId') productId: number,
+    @Query() paginationDto: PaginationDto
+  ) {
+    return this.ProductCommentService.findCommendOfproduct(productId, paginationDto);
+  }
 
 }

@@ -29,9 +29,16 @@ export class BlogCommentsController {
 
 
 
+  @Get('my')
+  @UseGuards(AnyAuthGuard)
+  getMyComments() {
+    return this.blogCommentService.findMyComments();
+  }
+
+
 
   @Delete("delete/:commentId")
- @UseGuards(AnyAuthGuard)
+  @UseGuards(AnyAuthGuard)
   remove(@Param("commentId") id: number) {
     return this.blogCommentService.remove(id);
   }
