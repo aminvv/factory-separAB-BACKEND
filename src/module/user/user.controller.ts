@@ -36,6 +36,18 @@ export class UserController {
     return req.user;
   }
 
+
+
+  @Patch('profile')
+  @UseGuards(UserGuard)
+  @ApiConsumes(swaggerConsumes.UrlEncoded)
+  updateProfile(@Req() req: Request, @Body() dto: UpdateUserDto) {
+    return this.userService.update(req.user!.id, dto);
+  }
+
+
+  
+
   @Get()
   @ApiConsumes(swaggerConsumes.UrlEncoded)
   findAll() {
@@ -62,4 +74,3 @@ export class UserController {
 
 
 }
- 
